@@ -2,8 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"slices"
 	"strconv"
 )
 
@@ -43,49 +46,70 @@ type TasksFromContest struct {
 	Tasks        []string
 }
 
-func FindProblemInd(problems *[]Problem, short string) int {
-	for ind, problem := range *problems {
-		if problem.Short == short {
-			return ind
-		}
+type DeadlineTasks = map[string][]string
+
+type DeadlineData struct {
+	Tasks DeadlineTasks `json:"deadline"`
+}
+
+func ParseDeadlineTasks(filepath string) DeadlineData {
+	file, err := os.Open(filepath)
+	if err != nil {
+		log.Fatalf("Error during opening deadline tasks file: %v", err.Error())
 	}
-	return -1
+	parser := json.NewDecoder(file)
+	var res DeadlineData
+	if err := parser.Decode(&res); err != nil {
+		log.Fatalf("Error during parsing deadline tasks: %v", err.Error())
+	}
+	return res
+}
+
+type SubmitsData struct {
+	Users    []User    `json:"users"`
+	Contests []Contest `json:"contests"`
+}
+
+type UnsolvedData struct {
+	total    int
+	unsolved []TasksFromContest
+	// maybe we will need more data
+}
+
+func GetSubmitsData(url string) SubmitsData {
+	res, err := http.Get(url)
+	if err != nil {
+		log.Fatalf("Error while quering algocode: %v", err.Error())
+	}
+	parser := json.NewDecoder(res.Body)
+	var data SubmitsData
+	if err = parser.Decode(&data); err != nil {
+		log.Fatalf("Error while parsing json from algocode: %v", err.Error())
+	}
+	return data
 }
 
 func main() {
+	// think of making this link shorter
+	data := GetSubmitsData("https://algocode.ru/standings_data/bp_fall_2023/")
 
-	var data struct {
-		Users    []User    `json:"users"`
-		Contests []Contest `json:"contests"`
-	}
-
-	dataFile, err := os.Open("data.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	jsonParser := json.NewDecoder(dataFile)
-	if err = jsonParser.Decode(&data); err != nil {
-		log.Fatal(err)
-	}
-
-	result := make(map[string][]TasksFromContest, len(data.Users))
+	result := make(map[string]*UnsolvedData, len(data.Users))
 
 	for _, user := range data.Users {
-		result[strconv.Itoa(user.Id)] = []TasksFromContest{}
+		result[strconv.Itoa(user.Id)] = &UnsolvedData{}
 	}
 
-	needTasks := map[string][]string{
-		"Кратчайшие пути": {"A", "B", "C", "E"},
-	}
+	needTasks := ParseDeadlineTasks("deadline.json")
 
 	for _, contest := range data.Contests {
-		needTasksInds := make([]int, len(needTasks[contest.Title]))
+		needTasksInds := make([]int, len(needTasks.Tasks[contest.Title]))
 		if len(needTasksInds) == 0 {
 			continue
 		}
-		for ind, needTask := range needTasks[contest.Title] {
-			taskInd := FindProblemInd(&contest.Problems, needTask)
+		for ind, needTask := range needTasks.Tasks[contest.Title] {
+			taskInd := slices.IndexFunc(contest.Problems, func(problem Problem) bool {
+				return problem.Short == needTask
+			})
 			if taskInd == -1 {
 				log.Fatal("Not found task " + needTask + " in " + contest.Title)
 			} else {
@@ -93,16 +117,22 @@ func main() {
 			}
 		}
 		for user, tasks := range contest.Users {
-			var tasksFromContest TasksFromContest
-			tasksFromContest.ContestTitle = contest.Title
+			tasksFromContest := TasksFromContest{contest.Title, make([]string, 0)}
 			for indInNeedTasks, needTask := range needTasksInds {
+				// Maybe this should be changed to tasks[needTask].Score == 1
 				if tasks[needTask].Verdict != "OK" {
-					tasksFromContest.Tasks = append(tasksFromContest.Tasks, needTasks[contest.Title][indInNeedTasks])
+					tasksFromContest.Tasks = append(tasksFromContest.Tasks,
+						needTasks.Tasks[contest.Title][indInNeedTasks])
 				}
 			}
 			if len(tasksFromContest.Tasks) != 0 {
-				result[user] = append(result[user], tasksFromContest)
+				result[user].unsolved = append(result[user].unsolved, tasksFromContest)
+				result[user].total += len(tasksFromContest.Tasks)
 			}
 		}
+	}
+
+	for s, contests := range result {
+		fmt.Printf("%v: %+v\n", s, contests)
 	}
 }
