@@ -52,7 +52,7 @@ type DeadlineData struct {
 	Tasks DeadlineTasks `json:"deadline"`
 }
 
-func ParseDeadlineTasks(filepath string) DeadlineData {
+func parseDeadlineTasks(filepath string) DeadlineData {
 	file, err := os.Open(filepath)
 	if err != nil {
 		log.Fatalf("Error during opening deadline tasks file: %v", err.Error())
@@ -76,22 +76,30 @@ type UnsolvedData struct {
 	// maybe we will need more data
 }
 
-func GetSubmitsData(url string) SubmitsData {
+type UserValues struct {
+	Name     string
+	Unsolved int
+	Values   []string
+}
+
+func getSubmitsData(url string) SubmitsData {
 	res, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Error while quering algocode: %v", err.Error())
+		log.Fatalf("Error while quering algocode: %v\n", err.Error())
 	}
 	parser := json.NewDecoder(res.Body)
 	var data SubmitsData
 	if err = parser.Decode(&data); err != nil {
-		log.Fatalf("Error while parsing json from algocode: %v", err.Error())
+		log.Fatalf("Error while parsing json from algocode: %v\n", err.Error())
 	}
 	return data
 }
 
-func Main() {
+func GetDeadlineResults() ([]string, []UserValues) {
+	var criterionTitles []string
+	var usersValues []UserValues
 	// think of making this link shorter
-	data := GetSubmitsData("https://algocode.ru/standings_data/bp_fall_2023/")
+	data := getSubmitsData("https://algocode.ru/standings_data/bp_fall_2023/")
 
 	result := make(map[string]*UnsolvedData, len(data.Users))
 
@@ -99,7 +107,7 @@ func Main() {
 		result[strconv.Itoa(user.Id)] = &UnsolvedData{}
 	}
 
-	needTasks := ParseDeadlineTasks("deadline.json")
+	needTasks := parseDeadlineTasks("deadline.json")
 
 	for _, contest := range data.Contests {
 		needTasksInds := make([]int, len(needTasks.Tasks[contest.Title]))
@@ -111,7 +119,7 @@ func Main() {
 				return problem.Short == needTask
 			})
 			if taskInd == -1 {
-				log.Fatal("Not found task " + needTask + " in " + contest.Title)
+				log.Fatalf("Not found task %v in %v\n", needTask, contest.Title)
 			} else {
 				needTasksInds[ind] = taskInd
 			}
@@ -135,8 +143,9 @@ func Main() {
 	}
 
 	for ind, user := range data.Users {
-		usersValues = append(usersValues, UserValues{Name: user.Name, Values: []string{}})
-		for _, tasksFromContest := range result[strconv.Itoa(user.Id)].unsolved {
+		cur := result[strconv.Itoa(user.Id)]
+		usersValues = append(usersValues, UserValues{Name: user.Name, Values: []string{}, Unsolved: cur.total})
+		for _, tasksFromContest := range cur.unsolved {
 			tasksInString := strings.Join(tasksFromContest.Tasks[:], ",")
 			if tasksInString == "" {
 				tasksInString = "Всё решил!"
@@ -144,4 +153,6 @@ func Main() {
 			usersValues[ind].Values = append(usersValues[ind].Values, tasksInString)
 		}
 	}
+
+	return criterionTitles, usersValues
 }
