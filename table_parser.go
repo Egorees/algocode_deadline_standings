@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"slices"
 	"strconv"
+	"strings"
 )
 
 type User struct {
@@ -89,7 +89,7 @@ func GetSubmitsData(url string) SubmitsData {
 	return data
 }
 
-func main() {
+func Main() {
 	// think of making this link shorter
 	data := GetSubmitsData("https://algocode.ru/standings_data/bp_fall_2023/")
 
@@ -125,14 +125,23 @@ func main() {
 						needTasks.Tasks[contest.Title][indInNeedTasks])
 				}
 			}
-			if len(tasksFromContest.Tasks) != 0 {
-				result[user].unsolved = append(result[user].unsolved, tasksFromContest)
-				result[user].total += len(tasksFromContest.Tasks)
-			}
+			result[user].unsolved = append(result[user].unsolved, tasksFromContest)
+			result[user].total += len(tasksFromContest.Tasks)
 		}
 	}
 
-	for s, contests := range result {
-		fmt.Printf("%v: %+v\n", s, contests)
+	for needContest, _ := range needTasks.Tasks {
+		criterionTitles = append(criterionTitles, needContest)
+	}
+
+	for ind, user := range data.Users {
+		usersValues = append(usersValues, UserValues{Name: user.Name, Values: []string{}})
+		for _, tasksFromContest := range result[strconv.Itoa(user.Id)].unsolved {
+			tasksInString := strings.Join(tasksFromContest.Tasks[:], ",")
+			if tasksInString == "" {
+				tasksInString = "Всё решил!"
+			}
+			usersValues[ind].Values = append(usersValues[ind].Values, tasksInString)
+		}
 	}
 }

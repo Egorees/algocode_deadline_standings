@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<table>
+    <tr>
+        <td>People</td>
+        {{range .CriterionTitles}}
+        <td><h2>{{.}}</h2></td>
+        {{end}}
+    </tr>
+    {{range .Users}}
+    <tr>
+        <td>{{.Name}}</td>
+        {{range .Values}}
+        <td>{{.}}</td>
+        {{end}}
+    </tr>
+    {{end}}
+</table>
+</body>
+</html>
