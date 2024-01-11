@@ -130,7 +130,7 @@ func Main() {
 		}
 	}
 
-	for needContest, _ := range needTasks.Tasks {
+	for needContest := range needTasks.Tasks {
 		criterionTitles = append(criterionTitles, needContest)
 	}
 
