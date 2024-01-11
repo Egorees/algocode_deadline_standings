@@ -168,3 +168,4 @@ $RECYCLE.BIN/
 # Не стоит палить данные :)
 data.json
 deadline.json
+.idea/
