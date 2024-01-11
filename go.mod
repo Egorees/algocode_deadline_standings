@@ -1,3 +1,3 @@
-module projectForMike
+module algocode_deadline_standings
 
-go 1.20
+go 1.21
