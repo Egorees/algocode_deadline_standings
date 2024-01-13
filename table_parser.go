@@ -113,6 +113,8 @@ func GetDeadlineResults() ([]string, []UserValues) {
 		needTasksInds := make([]int, len(needTasks.Tasks[contest.Title]))
 		if len(needTasksInds) == 0 {
 			continue
+		} else {
+			criterionTitles = append(criterionTitles, contest.Title)
 		}
 		for ind, needTask := range needTasks.Tasks[contest.Title] {
 			taskInd := slices.IndexFunc(contest.Problems, func(problem Problem) bool {
@@ -136,10 +138,6 @@ func GetDeadlineResults() ([]string, []UserValues) {
 			result[user].unsolved = append(result[user].unsolved, tasksFromContest)
 			result[user].total += len(tasksFromContest.Tasks)
 		}
-	}
-
-	for needContest := range needTasks.Tasks {
-		criterionTitles = append(criterionTitles, needContest)
 	}
 
 	for ind, user := range data.Users {
