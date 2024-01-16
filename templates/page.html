@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <style>
+        table, th, td {
+            border: 2px solid black;
+            border-collapse: collapse;
+        }
+    </style>
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
@@ -8,22 +14,18 @@
 </head>
 <body>
 <table class="table table-striped">
-    <thead>
     <tr>
         <th scope="col">Человек</th>
-        <th scope="col">Не решено</th>
         {{range .CriterionTitles}}
         <th scope="col">{{.}}</th>
         {{end}}
     </tr>
-    </thead>
     <tbody>
     {{range .Users}}
     <tr>
         <th scope="row">{{.Name}}</th>
-        <td>{{.Unsolved}}</td>
         {{range .Values}}
-        <td>{{.}}</td>
+        <td style="background-color:{{.Color}}">{{.Value}}</td>
         {{end}}
     </tr>
     {{end}}

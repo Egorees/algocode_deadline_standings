@@ -10,6 +10,13 @@ import (
 	"strings"
 )
 
+const (
+	green  = "#00FF00"
+	yellow = "#FFFF00"
+	orange = "#FFA500"
+	red    = "#FF0000"
+)
+
 type User struct {
 	Id         int    `json:"id"`
 	Name       string `json:"name"`
@@ -76,10 +83,14 @@ type UnsolvedData struct {
 	// maybe we will need more data
 }
 
+type Value struct {
+	Value string
+	Color string
+}
+
 type UserValues struct {
-	Name     string
-	Unsolved int
-	Values   []string
+	Name   string
+	Values []Value
 }
 
 func getSubmitsData(url string) SubmitsData {
@@ -96,7 +107,8 @@ func getSubmitsData(url string) SubmitsData {
 }
 
 func GetDeadlineResults() ([]string, []UserValues) {
-	var criterionTitles []string
+	criterionTitles := []string{"Не решено"}
+
 	var usersValues []UserValues
 	// think of making this link shorter
 	data := getSubmitsData("https://algocode.ru/standings_data/bp_fall_2023/")
@@ -139,16 +151,34 @@ func GetDeadlineResults() ([]string, []UserValues) {
 			result[user].total += len(tasksFromContest.Tasks)
 		}
 	}
-
 	for ind, user := range data.Users {
 		cur := result[strconv.Itoa(user.Id)]
-		usersValues = append(usersValues, UserValues{Name: user.Name, Values: []string{}, Unsolved: cur.total})
+		usersValues = append(usersValues, UserValues{Name: user.Name, Values: []Value{}})
+
+		var unsolvedColor string
+		switch {
+		case cur.total == 0:
+			unsolvedColor = green
+		case cur.total < 3:
+			unsolvedColor = yellow
+		case cur.total < 7:
+			unsolvedColor = orange
+		default:
+			unsolvedColor = red
+		}
+
+		usersValues[ind].Values = append(usersValues[ind].Values, Value{Value: strconv.Itoa(cur.total), Color: unsolvedColor})
+
 		for _, tasksFromContest := range cur.unsolved {
+			var valueColor string
 			tasksInString := strings.Join(tasksFromContest.Tasks[:], ",")
 			if tasksInString == "" {
 				tasksInString = "Всё решил!"
+				valueColor = green
+			} else {
+				valueColor = red
 			}
-			usersValues[ind].Values = append(usersValues[ind].Values, tasksInString)
+			usersValues[ind].Values = append(usersValues[ind].Values, Value{Value: tasksInString, Color: valueColor})
 		}
 	}
 
