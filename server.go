@@ -4,13 +4,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"time"
 )
 
 func main() {
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/page.html")
+	criterionTitles, usersValues := GetDeadlineResults()
+	lastUpdate := time.Now()
 	router.GET("/", func(c *gin.Context) {
-		criterionTitles, usersValues := GetDeadlineResults()
+		if time.Since(lastUpdate).Seconds() > 30 {
+			criterionTitles, usersValues = GetDeadlineResults()
+			lastUpdate = time.Now()
+		}
 		c.HTML(http.StatusOK, "page.html", gin.H{
 			"CriterionTitles": criterionTitles,
 			"Users":           usersValues,
