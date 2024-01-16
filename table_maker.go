@@ -3,55 +3,11 @@ package main
 import (
 	"encoding/json"
 	"log"
-	"net/http"
 	"os"
 	"slices"
 	"strconv"
 	"strings"
 )
-
-const (
-	green  = "#00FF00"
-	yellow = "#FFFF00"
-	orange = "#FFA500"
-	red    = "#FF0000"
-)
-
-type User struct {
-	Id         int    `json:"id"`
-	Name       string `json:"name"`
-	Group      string `json:"group"`
-	GroupShort string `json:"group_short"`
-}
-
-type Problem struct {
-	Id    string `json:"id"`
-	Long  string `json:"long"`
-	Short string `json:"short"`
-	Index int    `json:"index"`
-}
-
-type UserSubmit struct {
-	Score   int    `json:"score"`
-	Penalty int    `json:"penalty"`
-	Verdict string `json:"verdict"`
-	Time    int    `json:"time"`
-}
-
-type Contest struct {
-	Id          int                     `json:"id"`
-	Date        string                  `json:"date"`
-	EjudgeId    int                     `json:"ejudge_id"`
-	Title       string                  `json:"title"`
-	Coefficient float64                 `json:"coefficient"`
-	Problems    []Problem               `json:"problems"`
-	Users       map[string][]UserSubmit `json:"users"`
-}
-
-type TasksFromContest struct {
-	ContestTitle string
-	Tasks        []string
-}
 
 type DeadlineTasks = map[string][]string
 
@@ -59,22 +15,9 @@ type DeadlineData struct {
 	Tasks DeadlineTasks `json:"deadline"`
 }
 
-func parseDeadlineTasks(filepath string) DeadlineData {
-	file, err := os.Open(filepath)
-	if err != nil {
-		log.Fatalf("Error during opening deadline tasks file: %v", err.Error())
-	}
-	parser := json.NewDecoder(file)
-	var res DeadlineData
-	if err := parser.Decode(&res); err != nil {
-		log.Fatalf("Error during parsing deadline tasks: %v", err.Error())
-	}
-	return res
-}
-
-type SubmitsData struct {
-	Users    []User    `json:"users"`
-	Contests []Contest `json:"contests"`
+type TasksFromContest struct {
+	ContestTitle string
+	Tasks        []string
 }
 
 type UnsolvedData struct {
@@ -93,24 +36,24 @@ type UserValues struct {
 	Values []Value
 }
 
-func getSubmitsData(url string) SubmitsData {
-	res, err := http.Get(url)
+func parseDeadlineTasks(filepath string) DeadlineData {
+	file, err := os.Open(filepath)
 	if err != nil {
-		log.Fatalf("Error while quering algocode: %v\n", err.Error())
+		log.Fatalf("Error during opening deadline tasks file: %v", err.Error())
 	}
-	parser := json.NewDecoder(res.Body)
-	var data SubmitsData
-	if err = parser.Decode(&data); err != nil {
-		log.Fatalf("Error while parsing json from algocode: %v\n", err.Error())
+	parser := json.NewDecoder(file)
+	var res DeadlineData
+	if err := parser.Decode(&res); err != nil {
+		log.Fatalf("Error during parsing deadline tasks: %v", err.Error())
 	}
-	return data
+	return res
 }
 
-func GetDeadlineResults() ([]string, []UserValues) {
+func GetDeadlineResults(config *Config) ([]string, []UserValues) {
 	criterionTitles := []string{"Не решено"}
 
 	var usersValues []UserValues
-	// think of making this link shorter
+	// think of making this link shorter/passing it
 	data := getSubmitsData("https://algocode.ru/standings_data/bp_fall_2023/")
 
 	result := make(map[string]*UnsolvedData, len(data.Users))
@@ -155,28 +98,17 @@ func GetDeadlineResults() ([]string, []UserValues) {
 		cur := result[strconv.Itoa(user.Id)]
 		usersValues = append(usersValues, UserValues{Name: user.Name, Values: []Value{}})
 
-		var unsolvedColor string
-		switch {
-		case cur.total == 0:
-			unsolvedColor = green
-		case cur.total < 3:
-			unsolvedColor = yellow
-		case cur.total < 7:
-			unsolvedColor = orange
-		default:
-			unsolvedColor = red
-		}
-
+		unsolvedColor := GetColorByCount(config, cur.total)
 		usersValues[ind].Values = append(usersValues[ind].Values, Value{Value: strconv.Itoa(cur.total), Color: unsolvedColor})
 
 		for _, tasksFromContest := range cur.unsolved {
 			var valueColor string
 			tasksInString := strings.Join(tasksFromContest.Tasks[:], ",")
 			if tasksInString == "" {
-				tasksInString = "Всё решил!"
-				valueColor = green
+				tasksInString = config.FullSolveText
+				valueColor = config.UnsolvedBorders[0].Color
 			} else {
-				valueColor = red
+				valueColor = config.UnsolvedBorders[len(config.UnsolvedBorders)-1].Color
 			}
 			usersValues[ind].Values = append(usersValues[ind].Values, Value{Value: tasksInString, Color: valueColor})
 		}
