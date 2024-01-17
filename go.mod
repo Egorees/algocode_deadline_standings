@@ -3,7 +3,11 @@ module algocode_deadline_standings
 go 1.21
 
 require github.com/gin-gonic/gin v1.9.1
-require github.com/go-resty/resty/v2 v2.11.0
+
+require (
+	github.com/go-resty/resty/v2 v2.11.0
+	gopkg.in/yaml.v3 v3.0.1
+)
 
 require (
 	github.com/bytedance/sonic v1.10.2 // indirect
@@ -30,5 +34,4 @@ require (
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

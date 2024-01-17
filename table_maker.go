@@ -67,7 +67,7 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 				Tasks:        make([]string, 0),
 			}
 			for indInNeedTasks, needTask := range needTasksInds {
-				if tasks[needTask].Score > 0 {
+				if tasks[needTask].Score == 0 {
 					tasksFromContest.Tasks = append(tasksFromContest.Tasks,
 						needTasks.Tasks[contest.Title][indInNeedTasks])
 				}

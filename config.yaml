@@ -6,7 +6,7 @@ unsolved_borders:
   - count: 3
     color: "#FFFF00"
   - count: 5
-    color: "#FF0000"
+    color: "#FFA500"
   - count: 1000000000
     color: "#FF0000"
 server_address_port: "127.0.0.1:8080"
