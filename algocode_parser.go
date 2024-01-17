@@ -1,9 +1,8 @@
 package main
 
 import (
-	"encoding/json"
-	"log"
-	"net/http"
+	"github.com/go-resty/resty/v2"
+	"log/slog"
 )
 
 type User struct {
@@ -28,29 +27,30 @@ type UserSubmit struct {
 }
 
 type Contest struct {
-	Id          int                     `json:"id"`
-	Date        string                  `json:"date"`
-	EjudgeId    int                     `json:"ejudge_id"`
-	Title       string                  `json:"title"`
-	Coefficient float64                 `json:"coefficient"`
-	Problems    []Problem               `json:"problems"`
-	Users       map[string][]UserSubmit `json:"users"`
+	Id          int                      `json:"id"`
+	Date        string                   `json:"date"`
+	EjudgeId    int                      `json:"ejudge_id"`
+	Title       string                   `json:"title"`
+	Coefficient float64                  `json:"coefficient"`
+	Problems    []*Problem               `json:"problems"`
+	Users       map[string][]*UserSubmit `json:"users"`
 }
 
 type SubmitsData struct {
-	Users    []User    `json:"users"`
-	Contests []Contest `json:"contests"`
+	Users    []*User    `json:"users"`
+	Contests []*Contest `json:"contests"`
 }
 
-func getSubmitsData(url string) SubmitsData {
-	res, err := http.Get(url)
+func getSubmitsData(url string) (data *SubmitsData) {
+	client := resty.New()
+	res, err := client.R().SetResult(&data).Get(url)
 	if err != nil {
-		log.Fatalf("Error while quering algocode: %v\n", err.Error())
+		slog.Warn("Error while querying algocode: %v\n", err.Error())
+		return nil
 	}
-	parser := json.NewDecoder(res.Body)
-	var data SubmitsData
-	if err = parser.Decode(&data); err != nil {
-		log.Fatalf("Error while parsing json from algocode: %v\n", err.Error())
+	if res.StatusCode() != 200 {
+		slog.Warn("Algocode returned code %v\n", res.StatusCode())
+		return nil
 	}
-	return data
+	return
 }

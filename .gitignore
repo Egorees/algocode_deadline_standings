@@ -165,7 +165,6 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/go,goland,windows
 
-# Не стоит палить данные :)
 data.json
-deadline.json
+deadline.yaml
 .idea/
