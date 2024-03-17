@@ -19,19 +19,35 @@ func main() {
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/page.html")
 	// data
-	criterionTitles, usersValues := GetDeadlineResults(config)
+	criterionTitles, usersValues, mapUsersValues := GetDeadlineResults(config)
 	lastUpdate := time.Now()
+	// funcs
+	update := func() {
+		if time.Since(lastUpdate).Seconds() > config.CacheTime {
+			criterionTitles, usersValues, mapUsersValues = GetDeadlineResults(config)
+			lastUpdate = time.Now()
+		}
+	}
 	// routes
 	router.Static("/static", "./static")
 	router.GET("/", func(c *gin.Context) {
-		if time.Since(lastUpdate).Seconds() > config.CacheTime {
-			criterionTitles, usersValues = GetDeadlineResults(config)
-			lastUpdate = time.Now()
-		}
+		update()
 		c.HTML(http.StatusOK, "page.html", gin.H{
 			"CriterionTitles": criterionTitles,
 			"Users":           usersValues,
 		})
+	})
+	router.GET("/name/:name", func(c *gin.Context) {
+		update()
+		name := c.Param("name")
+		if val, ok := mapUsersValues[name]; ok {
+			c.HTML(http.StatusOK, "page.html", gin.H{
+				"CriterionTitles": criterionTitles,
+				"Users":           []*UserValues{val},
+			})
+		} else {
+			c.String(http.StatusNotFound, "name \"%s\" not found", name)
+		}
 	})
 
 	err := router.Run(config.ServerAddressPort)

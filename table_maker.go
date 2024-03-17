@@ -28,7 +28,7 @@ type UserValues struct {
 	Values []*Value
 }
 
-func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
+func GetDeadlineResults(config *Config) ([]string, []*UserValues, map[string]*UserValues) {
 	criterionTitles := []string{"Не решено"}
 
 	var usersValues []*UserValues
@@ -111,5 +111,12 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 		}
 	}
 
-	return criterionTitles, usersValues
+	// some changes on usersValues
+	newUsersValues := make(map[string]*UserValues)
+
+	for _, uv := range usersValues {
+		newUsersValues[uv.Name] = uv
+	}
+
+	return criterionTitles, usersValues, newUsersValues
 }

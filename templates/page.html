@@ -12,6 +12,22 @@
     <link rel="icon" href="/static/favicon.jpg">
     <link rel="stylesheet" href="/static/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        a {
+            color: black;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: darkgray;
+            text-decoration: none;
+        }
+
+        a:active {
+            color: gray;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
 <table class="table table-striped">
@@ -24,7 +40,7 @@
     <tbody>
     {{range .Users}}
     <tr>
-        <th scope="row">{{.Name}}</th>
+        <th scope="row"><a class="link-dark" href="/name/{{.Name}}">{{.Name}}</a></th>
         {{range .Values}}
         <td style="background-color:{{.Color}}">{{.Value}}</td>
         {{end}}
