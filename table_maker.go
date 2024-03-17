@@ -28,10 +28,11 @@ type UserValues struct {
 	Values []*Value
 }
 
-func GetDeadlineResults(config *Config) ([]string, []*UserValues, map[string]*UserValues) {
+func GetDeadlineResults(config *Config) ([]string, map[string]*UserValues) {
 	criterionTitles := []string{"Не решено"}
 
-	var usersValues []*UserValues
+	//var usersValues []*UserValues
+	mapUsersValues := make(map[string]*UserValues)
 	data := getSubmitsData(config.SubmitsLink)
 
 	result := make(map[string]*UnsolvedData, len(data.Users))
@@ -76,22 +77,33 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues, map[string]*Us
 			result[user].total += len(tasksFromContest.Tasks)
 		}
 	}
-	for ind, user := range data.Users {
+	for _, user := range data.Users {
 		cur := result[strconv.Itoa(user.Id)]
-		usersValues = append(usersValues,
-			&UserValues{
-				Name:   user.Name,
-				Values: []*Value{},
-			},
-		)
+		// Changed everywhere usersValue to mapUsersValues
+		mapUsersValues[user.Name] = &UserValues{
+			Name:   user.Name,
+			Values: []*Value{},
+		}
+		//usersValues = append(usersValues,
+		//	&UserValues{
+		//		Name:   user.Name,
+		//		Values: []*Value{},
+		//	},
+		//)
 
 		unsolvedColor := config.GetColorByCount(cur.total)
-		usersValues[ind].Values = append(usersValues[ind].Values,
+		mapUsersValues[user.Name].Values = append(mapUsersValues[user.Name].Values,
 			&Value{
 				Value: strconv.Itoa(cur.total),
 				Color: unsolvedColor,
 			},
 		)
+		//usersValues[ind].Values = append(usersValues[ind].Values,
+		//	&Value{
+		//		Value: strconv.Itoa(cur.total),
+		//		Color: unsolvedColor,
+		//	},
+		//)
 
 		for _, tasksFromContest := range cur.unsolved {
 			var valueColor string
@@ -102,21 +114,27 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues, map[string]*Us
 			} else {
 				valueColor = config.UnsolvedBorders[len(config.UnsolvedBorders)-1].Color
 			}
-			usersValues[ind].Values = append(usersValues[ind].Values,
+			mapUsersValues[user.Name].Values = append(mapUsersValues[user.Name].Values,
 				&Value{
 					Value: tasksInString,
 					Color: valueColor,
 				},
 			)
+			//usersValues[ind].Values = append(usersValues[ind].Values,
+			//	&Value{
+			//		Value: tasksInString,
+			//		Color: valueColor,
+			//	},
+			//)
 		}
 	}
 
-	// some changes on usersValues
-	newUsersValues := make(map[string]*UserValues)
+	// some changes on usersValues -- completely changed to mapUsersValues
+	//newUsersValues := make(map[string]*UserValues)
+	//
+	//for _, uv := range usersValues {
+	//	newUsersValues[uv.Name] = uv
+	//}
 
-	for _, uv := range usersValues {
-		newUsersValues[uv.Name] = uv
-	}
-
-	return criterionTitles, usersValues, newUsersValues
+	return criterionTitles, mapUsersValues
 }

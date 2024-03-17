@@ -9,7 +9,7 @@
     </style>
     <meta charset="UTF-8">
     <title>Дедлайны</title>
-    <link rel="icon" href="/static/favicon.jpg">
+    <link rel="icon" href="/favicon.jpg">
     <link rel="stylesheet" href="/static/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <style>
@@ -38,7 +38,7 @@
         {{end}}
     </tr>
     <tbody>
-    {{range .Users}}
+    {{range .UsersMap}}
     <tr>
         <th scope="row"><a class="link-dark" href="/name/{{.Name}}">{{.Name}}</a></th>
         {{range .Values}}
