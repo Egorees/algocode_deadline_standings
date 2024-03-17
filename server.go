@@ -15,8 +15,15 @@ func main() {
 		return a.Count - b.Count
 	})
 
+	// release mode?
+	//gin.SetMode(gin.ReleaseMode)
+
 	// router
 	router := gin.Default()
+
+	// I think now we don't need this... https://pkg.go.dev/github.com/gin-gonic/gin#Engine.SetTrustedProxies
+	router.ForwardedByClientIP = false
+
 	router.LoadHTMLGlob("templates/page.html")
 	// data
 	criterionTitles, mapUsersValues := GetDeadlineResults(config)
