@@ -1,6 +1,10 @@
 package main
 
 import (
+	"github.com/emirpasic/gods/maps/treemap"
+	"github.com/emirpasic/gods/utils"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"log/slog"
 	"slices"
 	"strconv"
@@ -31,8 +35,10 @@ type UserValues struct {
 func GetDeadlineResults(config *Config) ([]string, map[string]*UserValues) {
 	criterionTitles := []string{"Не решено"}
 
-	//var usersValues []*UserValues
 	mapUsersValues := make(map[string]*UserValues)
+	_map := treemap.NewWith(utils.StringComparator)
+	//_map.tree
+
 	data := getSubmitsData(config.SubmitsLink)
 
 	result := make(map[string]*UnsolvedData, len(data.Users))
@@ -47,9 +53,8 @@ func GetDeadlineResults(config *Config) ([]string, map[string]*UserValues) {
 		needTasksInds := make([]int, len(needTasks.Tasks[contest.Title]))
 		if len(needTasksInds) == 0 {
 			continue
-		} else {
-			criterionTitles = append(criterionTitles, contest.Title)
 		}
+		criterionTitles = append(criterionTitles, contest.Title)
 		for ind, needTask := range needTasks.Tasks[contest.Title] {
 			taskInd := slices.IndexFunc(contest.Problems, func(problem *Problem) bool {
 				return problem.Short == needTask
@@ -79,31 +84,28 @@ func GetDeadlineResults(config *Config) ([]string, map[string]*UserValues) {
 	}
 	for _, user := range data.Users {
 		cur := result[strconv.Itoa(user.Id)]
-		// Changed everywhere usersValue to mapUsersValues
+
+		// why not just strings.Title()? Just because. https://pkg.go.dev/strings#Title
+		// user.Name = strings.Title(user.Name)
+		user.Name = cases.Title(language.Russian).String(user.Name)
+
+		_map.Put(user.Name, &UserValues{
+			Name:   user.Name,
+			Values: []*Value{},
+		})
 		mapUsersValues[user.Name] = &UserValues{
 			Name:   user.Name,
 			Values: []*Value{},
 		}
-		//usersValues = append(usersValues,
-		//	&UserValues{
-		//		Name:   user.Name,
-		//		Values: []*Value{},
-		//	},
-		//)
 
 		unsolvedColor := config.GetColorByCount(cur.total)
+		//_map.
 		mapUsersValues[user.Name].Values = append(mapUsersValues[user.Name].Values,
 			&Value{
 				Value: strconv.Itoa(cur.total),
 				Color: unsolvedColor,
 			},
 		)
-		//usersValues[ind].Values = append(usersValues[ind].Values,
-		//	&Value{
-		//		Value: strconv.Itoa(cur.total),
-		//		Color: unsolvedColor,
-		//	},
-		//)
 
 		for _, tasksFromContest := range cur.unsolved {
 			var valueColor string
@@ -120,21 +122,8 @@ func GetDeadlineResults(config *Config) ([]string, map[string]*UserValues) {
 					Color: valueColor,
 				},
 			)
-			//usersValues[ind].Values = append(usersValues[ind].Values,
-			//	&Value{
-			//		Value: tasksInString,
-			//		Color: valueColor,
-			//	},
-			//)
 		}
 	}
-
-	// some changes on usersValues -- completely changed to mapUsersValues
-	//newUsersValues := make(map[string]*UserValues)
-	//
-	//for _, uv := range usersValues {
-	//	newUsersValues[uv.Name] = uv
-	//}
 
 	return criterionTitles, mapUsersValues
 }

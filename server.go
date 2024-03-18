@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/chenyahui/gin-cache"
+	"github.com/chenyahui/gin-cache/persist"
 	"github.com/gin-gonic/gin"
 	"log/slog"
 	"net/http"
@@ -11,10 +13,13 @@ import (
 func main() {
 	// parse config
 	config := ParseConfig("config.yaml")
+	updPrd := time.Duration(config.CacheTime) * time.Second
 	slices.SortFunc(config.UnsolvedBorders, func(a, b *UnsolvedBorder) int {
 		return a.Count - b.Count
 	})
 
+	// cache
+	store := persist.NewMemoryStore(updPrd)
 	// release mode?
 	//gin.SetMode(gin.ReleaseMode)
 
@@ -35,17 +40,18 @@ func main() {
 			lastUpdate = time.Now()
 		}
 	}
+
 	// routes
 	router.Static("/static", "./static")
 	router.StaticFile("favicon.jpg", "./static/favicon.jpg")
-	router.GET("/", func(c *gin.Context) {
+	router.GET("/", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
 		update()
 		c.HTML(http.StatusOK, "page.html", gin.H{
 			"CriterionTitles": criterionTitles,
 			"UsersMap":        mapUsersValues,
 		})
 	})
-	router.GET("/name/:name", func(c *gin.Context) {
+	router.GET("/name/:name", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
 		update()
 		name := c.Param("name")
 		if val, ok := mapUsersValues[name]; ok {
