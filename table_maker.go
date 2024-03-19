@@ -1,6 +1,8 @@
 package main
 
 import (
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"log/slog"
 	"slices"
 	"strconv"
@@ -24,8 +26,10 @@ type Value struct {
 }
 
 type UserValues struct {
-	Name   string
-	Values []*Value
+	FirstName  string
+	SecondName string
+	FullName   string
+	Values     []*Value
 }
 
 func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
@@ -46,9 +50,8 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 		needTasksInds := make([]int, len(needTasks.Tasks[contest.Title]))
 		if len(needTasksInds) == 0 {
 			continue
-		} else {
-			criterionTitles = append(criterionTitles, contest.Title)
 		}
+		criterionTitles = append(criterionTitles, contest.Title)
 		for ind, needTask := range needTasks.Tasks[contest.Title] {
 			taskInd := slices.IndexFunc(contest.Problems, func(problem *Problem) bool {
 				return problem.Short == needTask
@@ -78,10 +81,19 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 	}
 	for ind, user := range data.Users {
 		cur := result[strconv.Itoa(user.Id)]
+
+		// name parse
+		// why not just strings.Title()? Just because. https://pkg.go.dev/strings#Title
+		fullName := strings.Split(user.Name, " ")
+		firstName := cases.Title(language.Russian).String(fullName[0])
+		secondName := cases.Title(language.Russian).String(fullName[1])
+
 		usersValues = append(usersValues,
 			&UserValues{
-				Name:   user.Name,
-				Values: []*Value{},
+				FirstName:  firstName,
+				SecondName: secondName,
+				FullName:   secondName + " " + firstName,
+				Values:     []*Value{},
 			},
 		)
 
@@ -110,6 +122,13 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 			)
 		}
 	}
+
+	slices.SortFunc(usersValues, func(a, b *UserValues) int {
+		if n := strings.Compare(a.SecondName, b.SecondName); n != 0 {
+			return n
+		}
+		return strings.Compare(a.FirstName, b.FirstName)
+	})
 
 	return criterionTitles, usersValues
 }

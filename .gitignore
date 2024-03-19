@@ -166,5 +166,5 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/go,goland,windows
 
 data.json
-deadline.yaml
+# deadline.yaml <--- current deadline in B'
 .idea/

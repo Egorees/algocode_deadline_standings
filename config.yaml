@@ -2,13 +2,13 @@ cache_time: 60
 full_solve_text: "АМНЯМ"
 unsolved_borders:
   - count: 0
-    color: "#00FF00"
+    color: "#97ff82"
   - count: 3
-    color: "#FFFF00"
+    color: "#eeff82"
   - count: 5
-    color: "#FFA500"
+    color: "#ffcb82"
   - count: 1000000000
-    color: "#FF0000"
+    color: "#ff7259"
 server_address_port: "127.0.0.1:8080"
 submits_link: "https://algocode.ru/standings_data/bp_fall_2023/"
 deadline_filepath: "deadline.yaml"
