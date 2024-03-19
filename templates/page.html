@@ -39,7 +39,7 @@
     <tbody>
     {{range .UsersMap}}
     <tr>
-        <th scope="row"><a class="link-dark" href="/name/{{.Name}}">{{.Name}}</a></th>
+        <th scope="row"><a class="link-dark" href="/search/{{.FullName}}">{{.FullName}}</a></th>
         {{range .Values}}
         <td style="background-color:{{.Color}}">{{.Value}}</td>
         {{end}}

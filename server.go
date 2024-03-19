@@ -31,12 +31,12 @@ func main() {
 
 	router.LoadHTMLGlob("templates/page.html")
 	// data
-	criterionTitles, mapUsersValues := GetDeadlineResults(config)
+	criterionTitles, userValues := GetDeadlineResults(config)
 	lastUpdate := time.Now()
 	// funcs
 	update := func() {
 		if time.Since(lastUpdate).Seconds() > config.CacheTime {
-			criterionTitles, mapUsersValues = GetDeadlineResults(config)
+			criterionTitles, userValues = GetDeadlineResults(config)
 			lastUpdate = time.Now()
 		}
 	}
@@ -48,22 +48,24 @@ func main() {
 		update()
 		c.HTML(http.StatusOK, "page.html", gin.H{
 			"CriterionTitles": criterionTitles,
-			"UsersMap":        mapUsersValues,
+			"UsersMap":        userValues,
 		})
 	})
-	router.GET("/name/:name", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
+
+	router.GET("/search/:name", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
 		update()
 		name := c.Param("name")
-		if val, ok := mapUsersValues[name]; ok {
-			c.HTML(http.StatusOK, "page.html", gin.H{
-				"CriterionTitles": criterionTitles,
-				"UsersMap":        []*UserValues{val},
-			})
-		} else {
-			c.String(http.StatusNotFound, "name \"%s\" not found", name)
+		for _, el := range userValues {
+			if el.FullName == name {
+				c.HTML(http.StatusOK, "page.html", gin.H{
+					"CriterionTitles": criterionTitles,
+					"UsersMap":        []*UserValues{el},
+				})
+				return
+			}
 		}
+		c.String(http.StatusNotFound, "Nothing found with name=\"%s\"", name)
 	})
-
 	err := router.Run(config.ServerAddressPort)
 	if err != nil {
 		slog.Error("Server down with error: %s", err)
