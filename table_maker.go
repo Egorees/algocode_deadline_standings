@@ -107,7 +107,7 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 
 		for _, tasksFromContest := range cur.unsolved {
 			var valueColor string
-			tasksInString := strings.Join(tasksFromContest.Tasks[:], ",")
+			tasksInString := strings.Join(tasksFromContest.Tasks[:], ", ")
 			if tasksInString == "" {
 				tasksInString = config.FullSolveText
 				valueColor = config.UnsolvedBorders[0].Color
