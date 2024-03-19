@@ -85,8 +85,8 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 		// name parse
 		// why not just strings.Title()? Just because. https://pkg.go.dev/strings#Title
 		fullName := strings.Split(user.Name, " ")
-		firstName := cases.Title(language.Russian).String(fullName[0])
-		secondName := cases.Title(language.Russian).String(fullName[1])
+		firstName := cases.Title(language.Russian).String(fullName[1])
+		secondName := cases.Title(language.Russian).String(fullName[0])
 
 		usersValues = append(usersValues,
 			&UserValues{
@@ -124,10 +124,10 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 	}
 
 	slices.SortFunc(usersValues, func(a, b *UserValues) int {
-		if n := strings.Compare(a.SecondName, b.SecondName); n != 0 {
+		if n := strings.Compare(a.FirstName, b.FirstName); n != 0 {
 			return n
 		}
-		return strings.Compare(a.FirstName, b.FirstName)
+		return strings.Compare(a.SecondName, b.SecondName)
 	})
 
 	return criterionTitles, usersValues

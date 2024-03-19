@@ -23,15 +23,21 @@ func main() {
 
 	// cache
 	store := persist.NewMemoryStore(updPrd)
+
 	// release mode?
-	//gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.ReleaseMode)
 
 	// router
 	router := gin.Default()
 
 	// I think now we don't need this... https://pkg.go.dev/github.com/gin-gonic/gin#Engine.SetTrustedProxies
-	router.ForwardedByClientIP = false
+	err := router.SetTrustedProxies(nil)
+	if err != nil {
+		slog.Error("Cant set trusted proxies: %s", err)
+		panic(err)
+	}
 
+	// templates
 	router.LoadHTMLGlob("templates/page.gohtml")
 	// data
 	criterionTitles, userValues := GetDeadlineResults(config)
@@ -46,15 +52,17 @@ func main() {
 		lock.Unlock()
 	}
 
-	// routes
+	// routes (static)
 	router.Static("/static", "./static")
 	router.StaticFile("favicon.jpg", "./static/favicon.jpg")
-	router.GET("/", func(c *gin.Context) {
+	// table routes
+	router.GET("/", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
 		update()
 		lock.RLock()
 		c.HTML(http.StatusOK, "page.gohtml", gin.H{
 			"CriterionTitles": criterionTitles,
-			"UsersMap":        userValues,
+			"UserValues":      userValues,
+			"Single":          false,
 		})
 		lock.RUnlock()
 	})
@@ -69,14 +77,17 @@ func main() {
 		if found {
 			c.HTML(http.StatusOK, "page.gohtml", gin.H{
 				"CriterionTitles": criterionTitles,
-				"UsersMap":        []*UserValues{userValues[ind]},
+				"UserValues":      []*UserValues{userValues[ind]},
+				"Single":          true,
 			})
 		} else {
 			c.String(http.StatusNotFound, "Nothing found with name=\"%s\"", name)
 		}
 		lock.RUnlock()
 	})
-	err := router.Run(config.ServerAddressPort)
+
+	// run server
+	err = router.Run(config.ServerAddressPort)
 	if err != nil {
 		slog.Error("Server down with error: %s", err)
 		panic(err)
