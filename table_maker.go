@@ -87,6 +87,7 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 		fullName := strings.Split(user.Name, " ")
 		firstName := cases.Title(language.Russian).String(fullName[1])
 		secondName := cases.Title(language.Russian).String(fullName[0])
+		//fmt.Printf("First name: %s, Last name: %s, Full name: %s\n", firstName, secondName, fullName)
 
 		usersValues = append(usersValues,
 			&UserValues{
@@ -124,10 +125,10 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 	}
 
 	slices.SortFunc(usersValues, func(a, b *UserValues) int {
-		if n := strings.Compare(a.FirstName, b.FirstName); n != 0 {
+		if n := strings.Compare(a.SecondName, b.SecondName); n != 0 {
 			return n
 		}
-		return strings.Compare(a.SecondName, b.SecondName)
+		return strings.Compare(a.FirstName, b.FirstName)
 	})
 
 	return criterionTitles, usersValues
