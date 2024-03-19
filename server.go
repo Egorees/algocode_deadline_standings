@@ -54,7 +54,7 @@ func main() {
 
 	// routes (static)
 	router.Static("/static", "./static")
-	router.StaticFile("favicon.jpg", "./static/favicon.jpg")
+	//router.StaticFile("favicon.jpg", "./static/favicon.jpg")
 	// table routes
 	router.GET("/", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
 		update()
