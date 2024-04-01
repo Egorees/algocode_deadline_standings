@@ -37,6 +37,9 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 
 	var usersValues []*UserValues
 	data := getSubmitsData(config.SubmitsLink)
+	if data == nil {
+		panic("Submits data is nil")
+	}
 
 	result := make(map[string]*UnsolvedData, len(data.Users))
 

@@ -169,3 +169,6 @@ data.json
 # Current deadline in B', check deadline_example.yaml for details
 deadline.yaml
 .idea/
+
+# debug files
+manual_debug/

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/go-resty/resty/v2"
 	"log/slog"
 )
@@ -13,10 +14,22 @@ type User struct {
 }
 
 type Problem struct {
-	Id    string `json:"id"`
+	Id    int    `json:"id"`
 	Long  string `json:"long"`
 	Short string `json:"short"`
 	Index int    `json:"index"`
+}
+
+func (problem *Problem) UnmarshalJSON(b []byte) error {
+	var data map[string]interface{}
+	if err := json.Unmarshal(b, &data); err != nil {
+		slog.Warn("WTF %v", err.Error())
+	}
+	problem.Id, _ = data["id"].(int)
+	problem.Long, _ = data["long"].(string)
+	problem.Short, _ = data["short"].(string)
+	problem.Index, _ = data["index"].(int)
+	return nil
 }
 
 type UserSubmit struct {
