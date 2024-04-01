@@ -23,7 +23,8 @@ type Problem struct {
 func (problem *Problem) UnmarshalJSON(b []byte) error {
 	var data map[string]interface{}
 	if err := json.Unmarshal(b, &data); err != nil {
-		slog.Warn("WTF %v", err.Error())
+		slog.Warn("Json unmarshalling error:", err)
+		panic(err)
 	}
 	problem.Id, _ = data["id"].(int)
 	problem.Long, _ = data["long"].(string)
