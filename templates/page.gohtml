@@ -33,8 +33,11 @@
 <table class="table table-striped">
     <tr>
         <th scope="col">Человек</th>
+        <th scope="col">Не решено</th>
         {{range .CriterionTitles}}
-            <th scope="col">{{.}}</th>
+            <th scope="col">
+                <a target="_blank" href="https://ejudge.algocode.ru/cgi-bin/new-client?contest_id={{.EjudgeId}}">{{.Title}}</a>
+            </th>
         {{end}}
     </tr>
     <tbody>

@@ -32,8 +32,13 @@ type UserValues struct {
 	Values     []*Value
 }
 
-func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
-	criterionTitles := []string{"Не решено"}
+type CriterionTitle struct {
+	Title    string
+	EjudgeId int
+}
+
+func GetDeadlineResults(config *Config) ([]*CriterionTitle, []*UserValues) {
+	criterionTitles := make([]*CriterionTitle, 0)
 
 	var usersValues []*UserValues
 	data := getSubmitsData(config.SubmitsLink)
@@ -54,7 +59,10 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 		if len(needTasksInds) == 0 {
 			continue
 		}
-		criterionTitles = append(criterionTitles, contest.Title)
+		criterionTitles = append(criterionTitles, &CriterionTitle{
+			Title:    contest.Title,
+			EjudgeId: contest.EjudgeId,
+		})
 		for ind, needTask := range needTasks.Tasks[contest.Title] {
 			taskInd := slices.IndexFunc(contest.Problems, func(problem *Problem) bool {
 				return problem.Short == needTask
