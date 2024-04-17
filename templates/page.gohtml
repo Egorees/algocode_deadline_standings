@@ -27,36 +27,40 @@
             color: gray;
             text-decoration: none;
         }
+
+        th, td {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-<table class="table table-striped">
-    <tr>
-        <th scope="col">Человек</th>
-        <th scope="col">Не решено</th>
-        {{range .CriterionTitles}}
-            <th scope="col">
-                <a target="_blank" href="https://ejudge.algocode.ru/cgi-bin/new-client?contest_id={{.EjudgeId}}">{{.Title}}</a>
-            </th>
-        {{end}}
-    </tr>
-    <tbody>
-        {{$single := .Single}}
-        {{range .UserValues}}
-            <tr>
-                <th scope="row">
-                    {{if $single}}
-                        <a href="/">{{.FullName}}</a>
-                    {{else}}
-                        <a href="/search/{{.FullName}}">{{.FullName}}</a>
-                    {{end}}
+    <table class="table table-striped">
+        <tr>
+            <th scope="col">Человек</th>
+            <th scope="col">Не решено</th>
+            {{range .CriterionTitles}}
+                <th scope="col">
+                    <a target="_blank" href="https://ejudge.algocode.ru/cgi-bin/new-client?contest_id={{.EjudgeId}}">{{.Title}}</a>
                 </th>
-                {{range .Values}}
-                    <td style="background-color:{{.Color}}">{{.Value}}</td>
-                {{end}}
-            </tr>
-        {{end}}
-    </tbody>
-</table>
+            {{end}}
+        </tr>
+        <tbody>
+            {{$single := .Single}}
+            {{range .UserValues}}
+                <tr>
+                    <th scope="row">
+                        {{if $single}}
+                            <a href="/">{{.FullName}}</a>
+                        {{else}}
+                            <a href="/search/{{.FullName}}">{{.FullName}}</a>
+                        {{end}}
+                    </th>
+                    {{range .Values}}
+                        <td style="background-color:{{.Color}}">{{.Value}}</td>
+                    {{end}}
+                </tr>
+            {{end}}
+        </tbody>
+    </table>
 </body>
 </html>

@@ -169,6 +169,8 @@ data.json
 # Current deadline in B', check deadline_example.yaml for details
 deadline.yaml
 .idea/
+server # executable
+ejudge_local/*.json
 
 # debug files
 manual_debug/

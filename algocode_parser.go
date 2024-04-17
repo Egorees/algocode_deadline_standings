@@ -66,5 +66,5 @@ func getSubmitsData(url string) (data *SubmitsData) {
 		slog.Warn("Algocode returned code %v\n", res.StatusCode())
 		return nil
 	}
-	return
+	return data
 }

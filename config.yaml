@@ -12,3 +12,4 @@ unsolved_borders:
 server_address_port: "127.0.0.1:8080"
 submits_link: "https://algocode.ru/standings_data/bp_fall_2023/"
 deadline_filepath: "deadline.yaml"
+release_mode: false

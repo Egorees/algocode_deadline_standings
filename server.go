@@ -25,28 +25,34 @@ func main() {
 	store := persist.NewMemoryStore(updPrd)
 
 	// release mode?
-	gin.SetMode(gin.ReleaseMode)
+	if config.ReleaseMode {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	// router
 	router := gin.Default()
 
 	// I think now we don't need this... https://pkg.go.dev/github.com/gin-gonic/gin#Engine.SetTrustedProxies
-	err := router.SetTrustedProxies(nil)
-	if err != nil {
-		slog.Error("Cant set trusted proxies: %s", err)
-		panic(err)
+	if config.ReleaseMode {
+		err := router.SetTrustedProxies(nil)
+		if err != nil {
+			slog.Error("Cant set trusted proxies: %s", err)
+			panic(err)
+		}
 	}
 
 	// templates
-	router.LoadHTMLGlob("templates/page.gohtml")
+	router.LoadHTMLGlob("templates/*.gohtml")
 	// data
 	criterionTitles, userValues := GetDeadlineResults(config)
+	stats := statisticsFun(config, userValues)
 	lastUpdate := time.Now()
 	// funcs
 	update := func() {
 		lock.Lock()
 		if time.Since(lastUpdate).Seconds() > config.CacheTime {
 			criterionTitles, userValues = GetDeadlineResults(config)
+			stats = statisticsFun(config, userValues)
 			lastUpdate = time.Now()
 		}
 		lock.Unlock()
@@ -63,6 +69,15 @@ func main() {
 			"CriterionTitles": criterionTitles,
 			"UserValues":      userValues,
 			"Single":          false,
+		})
+		lock.RUnlock()
+	})
+
+	router.GET("/stats", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
+		update()
+		lock.RLock()
+		c.HTML(http.StatusOK, "stats.gohtml", gin.H{
+			"Stats": stats,
 		})
 		lock.RUnlock()
 	})
@@ -87,7 +102,7 @@ func main() {
 	})
 
 	// run server
-	err = router.Run(config.ServerAddressPort)
+	err := router.Run(config.ServerAddressPort)
 	if err != nil {
 		slog.Error("Server down with error: %s", err)
 		panic(err)

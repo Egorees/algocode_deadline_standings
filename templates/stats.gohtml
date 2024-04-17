@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        table, th, td {
+            border: 2px solid black;
+            border-collapse: collapse;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Статистика</title>
+    <link rel="icon" href="/static/favicon.jpg">
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <style>
+        a {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        a:hover {
+            color: darkgray;
+            text-decoration: none;
+        }
+
+        a:active {
+            color: gray;
+            text-decoration: none;
+        }
+
+        th, td {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <table class="table table-striped">
+        <tr>
+            <th scope="col">Осталось решить</th>
+            <th scope="col">Сколько челиков</th>
+            <th scope="col">Челики</th>
+        </tr>
+        {{range $key, $stat := .Stats}}
+            <tr style="background-color: {{$stat.Color}}">
+                <th scope="col">
+                    {{$key}}
+                </th>
+                <th scope="col">{{$stat.Count}}</th>
+                {{range $stat.Peoples}}
+                    <td>{{.}}</td>
+                {{end}}
+            </tr>
+        {{end}}
+    </table>
+</body>
+</html>
