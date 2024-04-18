@@ -19,38 +19,53 @@
         }
 
         a:hover {
-            color: darkgray;
-            text-decoration: none;
-        }
-
-        a:active {
             color: gray;
             text-decoration: none;
         }
 
-        th, td {
+        a:active {
+            color: darkgray;
+            text-decoration: none;
+        }
+
+        td, th {
             text-align: center;
         }
+
+        .blackborder th, .blackborder td {
+            border: solid 2px black;
+        }
     </style>
+    <script>
+        function toggleHide(el) {
+            el.hidden = !el.hidden;
+        }
+
+        function meow(id) {
+            document.getElementById(`people${id}`).querySelectorAll('td').forEach((el) => toggleHide(el))
+        }
+    </script>
 </head>
-<body>
-    <table class="table table-striped">
-        <tr>
-            <th scope="col">Осталось решить</th>
-            <th scope="col">Сколько челиков</th>
-            <th scope="col">Челики</th>
-        </tr>
-        {{range $key, $stat := .Stats}}
-            <tr style="background-color: {{$stat.Color}}">
-                <th scope="col">
-                    {{$key}}
-                </th>
-                <th scope="col">{{$stat.Count}}</th>
-                {{range $stat.Peoples}}
-                    <td>{{.}}</td>
-                {{end}}
+    <body>
+        <table class="table table-bordered">
+            <tr>
+                <th scope="col">Осталось решить</th>
+                <th scope="col">Сколько челиков</th>
+                <th colspan="200" scope="col">Челики</th>
             </tr>
-        {{end}}
-    </table>
-</body>
+            {{range $key, $stat := .Stats}}
+                <tr id="people{{$key}}" style="background-color: {{$stat.Color}}" class="blackborder">
+                    <th scope="col">
+                        {{$key}}
+                    </th>
+                    <th style="cursor: pointer" onclick="meow({{$key}})" scope="col">{{$stat.Count}}</th>
+                    {{range $stat.Peoples}}
+                        <td hidden style="border: solid 2px black">
+                            <a target="_blank" href="/search/{{.}}">{{.}}</a>
+                        </td>
+                    {{end}}
+                </tr>
+            {{end}}
+        </table>
+    </body>
 </html>

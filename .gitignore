@@ -174,3 +174,4 @@ ejudge_local/*.json
 
 # debug files
 manual_debug/
+ejudge_local

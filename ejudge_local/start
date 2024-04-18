@@ -1,3 +1,0 @@
-#!/bin/sh
-
-busybox httpd -f -v -p 127.1:7080
