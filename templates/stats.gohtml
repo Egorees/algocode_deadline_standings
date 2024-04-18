@@ -28,12 +28,10 @@
             text-decoration: none;
         }
 
-        td, th {
-            text-align: center;
-        }
-
         .blackborder th, .blackborder td {
             border: solid 2px black;
+            text-align: center;
+            vertical-align: middle;
         }
     </style>
     <script>
@@ -48,10 +46,10 @@
 </head>
     <body>
         <table class="table table-bordered">
-            <tr>
+            <tr class="blackborder">
                 <th scope="col">Осталось решить</th>
                 <th scope="col">Сколько челиков</th>
-                <th colspan="200" scope="col">Челики</th>
+                <th colspan="200" scope="col" style="text-align: left">Челики</th>
             </tr>
             {{range $key, $stat := .Stats}}
                 <tr id="people{{$key}}" style="background-color: {{$stat.Color}}" class="blackborder">
