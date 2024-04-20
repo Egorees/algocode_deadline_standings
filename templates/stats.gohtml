@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        table, th, td {
+            border: 2px solid black;
+            border-collapse: collapse;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Статистика</title>
+    <link rel="icon" href="/static/favicon.jpg">
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <style>
+        a {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        a:hover {
+            color: gray;
+            text-decoration: none;
+        }
+
+        a:active {
+            color: darkgray;
+            text-decoration: none;
+        }
+
+        .blackborder th, .blackborder td {
+            border: solid 2px black;
+            text-align: center;
+            vertical-align: middle;
+        }
+    </style>
+    <script>
+        function toggleHide(el) {
+            el.hidden = !el.hidden;
+        }
+
+        function meow(id) {
+            document.getElementById(`people${id}`).querySelectorAll('td').forEach((el) => toggleHide(el))
+        }
+    </script>
+</head>
+    <body>
+        <table class="table table-bordered">
+            <tr class="blackborder">
+                <th scope="col">Осталось решить</th>
+                <th scope="col">Сколько челиков</th>
+                <th colspan="200" scope="col" style="text-align: left">Челики</th>
+            </tr>
+            {{range $key, $stat := .Stats}}
+                <tr id="people{{$key}}" style="background-color: {{$stat.Color}}" class="blackborder">
+                    <th scope="col">
+                        {{$key}}
+                    </th>
+                    <th style="cursor: pointer" onclick="meow({{$key}})" scope="col">{{$stat.Count}}</th>
+                    {{range $stat.Peoples}}
+                        <td hidden style="border: solid 2px black">
+                            <a target="_blank" href="/search/{{.}}">{{.}}</a>
+                        </td>
+                    {{end}}
+                </tr>
+            {{end}}
+        </table>
+    </body>
+</html>

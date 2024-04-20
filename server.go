@@ -23,38 +23,61 @@ func main() {
 
 	// cache
 	store := persist.NewMemoryStore(updPrd)
+
 	// release mode?
-	//gin.SetMode(gin.ReleaseMode)
+	if config.ReleaseMode {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	// router
 	router := gin.Default()
 
 	// I think now we don't need this... https://pkg.go.dev/github.com/gin-gonic/gin#Engine.SetTrustedProxies
-	router.ForwardedByClientIP = false
+	if config.ReleaseMode {
+		err := router.SetTrustedProxies(nil)
+		if err != nil {
+			slog.Error("Cant set trusted proxies: %s", err)
+			panic(err)
+		}
+	}
 
-	router.LoadHTMLGlob("templates/page.gohtml")
+	// templates
+	router.LoadHTMLGlob("templates/*.gohtml")
 	// data
 	criterionTitles, userValues := GetDeadlineResults(config)
+	stats := statisticsFun(config, userValues)
 	lastUpdate := time.Now()
 	// funcs
 	update := func() {
 		lock.Lock()
 		if time.Since(lastUpdate).Seconds() > config.CacheTime {
 			criterionTitles, userValues = GetDeadlineResults(config)
+			stats = statisticsFun(config, userValues)
 			lastUpdate = time.Now()
 		}
 		lock.Unlock()
 	}
 
-	// routes
+	// routes (static)
 	router.Static("/static", "./static")
-	router.StaticFile("favicon.jpg", "./static/favicon.jpg")
-	router.GET("/", func(c *gin.Context) {
+	//router.StaticFile("favicon.jpg", "./static/favicon.jpg")
+	// table routes
+	router.GET("/", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
 		update()
 		lock.RLock()
 		c.HTML(http.StatusOK, "page.gohtml", gin.H{
 			"CriterionTitles": criterionTitles,
-			"UsersMap":        userValues,
+			"UserValues":      userValues,
+			"Single":          false,
+		})
+		lock.RUnlock()
+	})
+
+	router.GET("/stats", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
+		update()
+		lock.RLock()
+		c.HTML(http.StatusOK, "stats.gohtml", gin.H{
+			"Stats": stats,
 		})
 		lock.RUnlock()
 	})
@@ -69,13 +92,16 @@ func main() {
 		if found {
 			c.HTML(http.StatusOK, "page.gohtml", gin.H{
 				"CriterionTitles": criterionTitles,
-				"UsersMap":        []*UserValues{userValues[ind]},
+				"UserValues":      []*UserValues{userValues[ind]},
+				"Single":          true,
 			})
 		} else {
 			c.String(http.StatusNotFound, "Nothing found with name=\"%s\"", name)
 		}
 		lock.RUnlock()
 	})
+
+	// run server
 	err := router.Run(config.ServerAddressPort)
 	if err != nil {
 		slog.Error("Server down with error: %s", err)

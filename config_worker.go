@@ -19,6 +19,7 @@ type Config struct {
 	ServerAddressPort string            `yaml:"server_address_port"`
 	SubmitsLink       string            `yaml:"submits_link"`
 	DeadlineFilepath  string            `yaml:"deadline_filepath"`
+	ReleaseMode       bool              `yaml:"release_mode"`
 }
 
 func ParseConfig(filepath string) *Config {

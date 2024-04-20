@@ -32,11 +32,19 @@ type UserValues struct {
 	Values     []*Value
 }
 
-func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
-	criterionTitles := []string{"Не решено"}
+type CriterionTitle struct {
+	Title    string
+	EjudgeId int
+}
+
+func GetDeadlineResults(config *Config) ([]*CriterionTitle, []*UserValues) {
+	criterionTitles := make([]*CriterionTitle, 0)
 
 	var usersValues []*UserValues
 	data := getSubmitsData(config.SubmitsLink)
+	if data == nil {
+		panic("Submits data is nil")
+	}
 
 	result := make(map[string]*UnsolvedData, len(data.Users))
 
@@ -51,7 +59,10 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 		if len(needTasksInds) == 0 {
 			continue
 		}
-		criterionTitles = append(criterionTitles, contest.Title)
+		criterionTitles = append(criterionTitles, &CriterionTitle{
+			Title:    contest.Title,
+			EjudgeId: contest.EjudgeId,
+		})
 		for ind, needTask := range needTasks.Tasks[contest.Title] {
 			taskInd := slices.IndexFunc(contest.Problems, func(problem *Problem) bool {
 				return problem.Short == needTask
@@ -85,8 +96,9 @@ func GetDeadlineResults(config *Config) ([]string, []*UserValues) {
 		// name parse
 		// why not just strings.Title()? Just because. https://pkg.go.dev/strings#Title
 		fullName := strings.Split(user.Name, " ")
-		firstName := cases.Title(language.Russian).String(fullName[0])
-		secondName := cases.Title(language.Russian).String(fullName[1])
+		firstName := cases.Title(language.Russian).String(fullName[1])
+		secondName := cases.Title(language.Russian).String(fullName[0])
+		//fmt.Printf("First name: %s, Last name: %s, Full name: %s\n", firstName, secondName, fullName)
 
 		usersValues = append(usersValues,
 			&UserValues{
