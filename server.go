@@ -61,10 +61,16 @@ func main() {
 		}
 		lock.Unlock()
 	}
-	sendError := func(c *gin.Context) {
-		c.HTML(http.StatusInternalServerError, "error.gohtml", gin.H{
-			"Error": err.Error(),
-		})
+	errorCheckerHandler := func(c *gin.Context) {
+		update()
+		lock.RLock()
+		if err != nil {
+			c.HTML(http.StatusInternalServerError, "error.gohtml", gin.H{
+				"Error": err.Error(),
+			})
+			c.Abort()
+		}
+		lock.RUnlock()
 	}
 
 	// first update
@@ -74,14 +80,9 @@ func main() {
 	router.Static("/static", "./static")
 
 	// table routes
-	router.GET("/", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
+	router.GET("/", cache.CacheByRequestURI(store, updPrd), errorCheckerHandler, func(c *gin.Context) {
 		update()
 		lock.RLock()
-		if err != nil {
-			sendError(c)
-			lock.RUnlock()
-			return
-		}
 		c.HTML(http.StatusOK, "page.gohtml", gin.H{
 			"CriterionTitles": criterionTitles[2:],
 			"UserValues":      userValues,
@@ -90,28 +91,8 @@ func main() {
 		lock.RUnlock()
 	})
 
-	router.GET("/stats", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
-		update()
+	router.GET("/search/:name", cache.CacheByRequestURI(store, updPrd), errorCheckerHandler, func(c *gin.Context) {
 		lock.RLock()
-		if err != nil {
-			sendError(c)
-			lock.RUnlock()
-			return
-		}
-		c.HTML(http.StatusOK, "stats.gohtml", gin.H{
-			"Stats": stats,
-		})
-		lock.RUnlock()
-	})
-
-	router.GET("/search/:name", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
-		update()
-		lock.RLock()
-		if err != nil {
-			sendError(c)
-			lock.RUnlock()
-			return
-		}
 		name := c.Param("name")
 		ind, found := slices.BinarySearchFunc(userValues, name, func(values *UserValues, s string) int {
 			return strings.Compare(values.FullName, s)
@@ -127,6 +108,23 @@ func main() {
 		}
 		lock.RUnlock()
 	})
+
+	router.GET("/stats", cache.CacheByRequestURI(store, updPrd), errorCheckerHandler, func(c *gin.Context) {
+		lock.RLock()
+		c.HTML(http.StatusOK, "stats.gohtml", gin.H{
+			"Stats": stats,
+		})
+		lock.RUnlock()
+	})
+
+	//router.GET("/tasks/stat", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
+	//	lock.RLock()
+	//	c.HTML(http.StatusOK, "tasks_stat.gohtml", gin.H{
+	//		"CriterionTitles": criterionTitles,
+	//		"DeadlineTasks":
+	//	})
+	//	lock.RUnlock()
+	//})
 
 	// run server
 	err = router.Run(config.ServerAddressPort)
