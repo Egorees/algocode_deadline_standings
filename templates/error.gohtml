@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Ошибочка вышло =(</title>
+        <link rel="icon" href="/static/favicon.jpg">
+        <style>
+            .centered {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="centered">
+            <h1>{{ .Error }}</h1>
+            <video controls autoplay loop src="/static/sadcat.mp4"></video>
+        </div>
+    </body>
+</html>
