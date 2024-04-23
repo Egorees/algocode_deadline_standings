@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Статистика по задачам</title>
+    <link rel="icon" href="/static/favicon.jpg">
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+</head>
+<body>
+    <table class="table table-bordered">
+        <tr>
+            {{range .CriterionTitles}}
+                <th scope="col">{{.}}</th>
+            {{end}}
+        </tr>
+        <tr>
+            {{range $key, $tasks := .DeadlineTasks}}
+                {{range $task := $tasks}}
+                    <th>$task</th>
+                {{end}}
+            {{end}}
+        </tr>
+    </table>
+</body>
+</html>

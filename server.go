@@ -32,41 +32,58 @@ func main() {
 	// router
 	router := gin.Default()
 
+	// variables
+	var err error
+	var criterionTitles []*CriterionTitle
+	var userValues []*UserValues
+	var lastUpdate time.Time
+	var stats map[int]*Stats
+
 	// I think now we don't need this... https://pkg.go.dev/github.com/gin-gonic/gin#Engine.SetTrustedProxies
-	if config.ReleaseMode {
-		err := router.SetTrustedProxies(nil)
-		if err != nil {
-			slog.Error("Cant set trusted proxies: %s", err)
-			panic(err)
-		}
+	err = router.SetTrustedProxies(nil)
+	if err != nil {
+		slog.Error("Cant set trusted proxies: %s", err)
+		panic(err)
 	}
 
 	// templates
 	router.LoadHTMLGlob("templates/*.gohtml")
-	// data
-	criterionTitles, userValues := GetDeadlineResults(config)
-	stats := statisticsFun(config, userValues)
-	lastUpdate := time.Now()
+
 	// funcs
 	update := func() {
 		lock.Lock()
 		if time.Since(lastUpdate).Seconds() > config.CacheTime {
-			criterionTitles, userValues = GetDeadlineResults(config)
-			stats = statisticsFun(config, userValues)
+			criterionTitles, userValues, err = GetDeadlineResults(config)
+			if err == nil {
+				stats, err = statisticsFun(config, userValues)
+			}
 			lastUpdate = time.Now()
 		}
 		lock.Unlock()
 	}
+	sendError := func(c *gin.Context) {
+		c.HTML(http.StatusInternalServerError, "error.gohtml", gin.H{
+			"Error": err.Error(),
+		})
+	}
+
+	// first update
+	update()
 
 	// routes (static)
 	router.Static("/static", "./static")
-	//router.StaticFile("favicon.jpg", "./static/favicon.jpg")
+
 	// table routes
 	router.GET("/", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
 		update()
 		lock.RLock()
+		if err != nil {
+			sendError(c)
+			lock.RUnlock()
+			return
+		}
 		c.HTML(http.StatusOK, "page.gohtml", gin.H{
-			"CriterionTitles": criterionTitles,
+			"CriterionTitles": criterionTitles[2:],
 			"UserValues":      userValues,
 			"Single":          false,
 		})
@@ -76,6 +93,11 @@ func main() {
 	router.GET("/stats", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
 		update()
 		lock.RLock()
+		if err != nil {
+			sendError(c)
+			lock.RUnlock()
+			return
+		}
 		c.HTML(http.StatusOK, "stats.gohtml", gin.H{
 			"Stats": stats,
 		})
@@ -85,6 +107,11 @@ func main() {
 	router.GET("/search/:name", cache.CacheByRequestURI(store, updPrd), func(c *gin.Context) {
 		update()
 		lock.RLock()
+		if err != nil {
+			sendError(c)
+			lock.RUnlock()
+			return
+		}
 		name := c.Param("name")
 		ind, found := slices.BinarySearchFunc(userValues, name, func(values *UserValues, s string) int {
 			return strings.Compare(values.FullName, s)
@@ -102,7 +129,7 @@ func main() {
 	})
 
 	// run server
-	err := router.Run(config.ServerAddressPort)
+	err = router.Run(config.ServerAddressPort)
 	if err != nil {
 		slog.Error("Server down with error: %s", err)
 		panic(err)

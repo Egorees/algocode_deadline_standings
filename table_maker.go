@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"log/slog"
@@ -37,13 +38,22 @@ type CriterionTitle struct {
 	EjudgeId int
 }
 
-func GetDeadlineResults(config *Config) ([]*CriterionTitle, []*UserValues) {
+type DeadlineResultsError struct {
+	Reason string
+}
+
+func (e *DeadlineResultsError) Error() string {
+	return fmt.Sprintf("Deadline result error: %s", e.Reason)
+}
+
+func GetDeadlineResults(config *Config) ([]*CriterionTitle, []*UserValues, error) {
 	criterionTitles := make([]*CriterionTitle, 0)
 
 	var usersValues []*UserValues
 	data := getSubmitsData(config.SubmitsLink)
 	if data == nil {
-		panic("Submits data is nil")
+		slog.Error("Submits data is nil")
+		return nil, nil, &DeadlineResultsError{Reason: "Submits data is nil"}
 	}
 
 	result := make(map[string]*UnsolvedData, len(data.Users))
@@ -142,5 +152,5 @@ func GetDeadlineResults(config *Config) ([]*CriterionTitle, []*UserValues) {
 		return strings.Compare(a.FirstName, b.FirstName)
 	})
 
-	return criterionTitles, usersValues
+	return criterionTitles, usersValues, nil
 }
