@@ -84,7 +84,7 @@ func main() {
 		update()
 		lock.RLock()
 		c.HTML(http.StatusOK, "page.gohtml", gin.H{
-			"CriterionTitles": criterionTitles[2:],
+			"CriterionTitles": criterionTitles,
 			"UserValues":      userValues,
 			"Single":          false,
 		})
