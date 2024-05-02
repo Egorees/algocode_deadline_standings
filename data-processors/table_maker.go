@@ -1,7 +1,8 @@
-package main
+package data_processors
 
 import (
-	"fmt"
+	"algocode_deadline_standings/algocode"
+	"algocode_deadline_standings/configs"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"log/slog"
@@ -10,47 +11,11 @@ import (
 	"strings"
 )
 
-type TasksFromContest struct {
-	ContestTitle string
-	Tasks        []string
-}
-
-type UnsolvedData struct {
-	total    int
-	unsolved []*TasksFromContest
-	// maybe we will need more data
-}
-
-type Value struct {
-	Value string
-	Color string
-}
-
-type UserValues struct {
-	FirstName  string
-	SecondName string
-	FullName   string
-	Values     []*Value
-}
-
-type CriterionTitle struct {
-	Title    string
-	EjudgeId int
-}
-
-type DeadlineResultsError struct {
-	Reason string
-}
-
-func (e *DeadlineResultsError) Error() string {
-	return fmt.Sprintf("Deadline result error: %s", e.Reason)
-}
-
-func GetDeadlineResults(config *Config) ([]*CriterionTitle, []*UserValues, error) {
+func GetDeadlineResults(config *configs.Config) ([]*CriterionTitle, []*UserValues, error) {
 	criterionTitles := make([]*CriterionTitle, 0)
 
 	var usersValues []*UserValues
-	data := getSubmitsData(config.SubmitsLink)
+	data := algocode.GetSubmitsData(config.SubmitsLink)
 	if data == nil {
 		slog.Error("Submits data is nil")
 		return nil, nil, &DeadlineResultsError{Reason: "Submits data is nil"}
@@ -62,7 +27,7 @@ func GetDeadlineResults(config *Config) ([]*CriterionTitle, []*UserValues, error
 		result[strconv.Itoa(user.Id)] = &UnsolvedData{}
 	}
 
-	needTasks := ParseDeadlineTasks(config.DeadlineFilepath)
+	needTasks := configs.ParseDeadlineTasks(config.DeadlineFilepath)
 
 	for _, contest := range data.Contests {
 		needTasksInds := make([]int, len(needTasks.Tasks[contest.Title]))
@@ -74,7 +39,7 @@ func GetDeadlineResults(config *Config) ([]*CriterionTitle, []*UserValues, error
 			EjudgeId: contest.EjudgeId,
 		})
 		for ind, needTask := range needTasks.Tasks[contest.Title] {
-			taskInd := slices.IndexFunc(contest.Problems, func(problem *Problem) bool {
+			taskInd := slices.IndexFunc(contest.Problems, func(problem *algocode.Problem) bool {
 				return problem.Short == needTask
 			})
 			if taskInd == -1 {
@@ -108,7 +73,6 @@ func GetDeadlineResults(config *Config) ([]*CriterionTitle, []*UserValues, error
 		fullName := strings.Split(user.Name, " ")
 		firstName := cases.Title(language.Russian).String(fullName[1])
 		secondName := cases.Title(language.Russian).String(fullName[0])
-		//fmt.Printf("First name: %s, Last name: %s, Full name: %s\n", firstName, secondName, fullName)
 
 		usersValues = append(usersValues,
 			&UserValues{

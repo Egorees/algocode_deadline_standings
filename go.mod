@@ -5,6 +5,7 @@ go 1.21
 require github.com/gin-gonic/gin v1.9.1
 
 require (
+	github.com/akamensky/argparse v1.4.0
 	github.com/chenyahui/gin-cache v1.9.0
 	github.com/go-resty/resty/v2 v2.11.0
 	golang.org/x/text v0.14.0

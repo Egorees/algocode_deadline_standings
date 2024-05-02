@@ -1,4 +1,4 @@
-package main
+package configs
 
 import (
 	"gopkg.in/yaml.v3"
@@ -6,21 +6,6 @@ import (
 	"os"
 	"slices"
 )
-
-type UnsolvedBorder struct {
-	Count int    `json:"count"`
-	Color string `json:"color"`
-}
-
-type Config struct {
-	CacheTime         float64           `yaml:"cache_time"`
-	FullSolveText     string            `yaml:"full_solve_text"`
-	UnsolvedBorders   []*UnsolvedBorder `yaml:"unsolved_borders"`
-	ServerAddressPort string            `yaml:"server_address_port"`
-	SubmitsLink       string            `yaml:"submits_link"`
-	DeadlineFilepath  string            `yaml:"deadline_filepath"`
-	ReleaseMode       bool              `yaml:"release_mode"`
-}
 
 func ParseConfig(filepath string) *Config {
 	file, err := os.Open(filepath)
@@ -52,4 +37,25 @@ func (config *Config) GetColorByCount(count int) string {
 		ind = len(config.UnsolvedBorders) - 1
 	}
 	return config.UnsolvedBorders[ind].Color
+}
+
+func ParseDeadlineTasks(filepath string) DeadlineData {
+	file, err := os.Open(filepath)
+	if err != nil {
+		slog.Error("Error during opening deadline tasks file: %v", err.Error())
+		panic(err)
+	}
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(file)
+	parser := yaml.NewDecoder(file)
+	var res DeadlineData
+	if err := parser.Decode(&res); err != nil {
+		slog.Error("Error during parsing deadline tasks: %v", err.Error())
+		panic(err)
+	}
+	return res
 }

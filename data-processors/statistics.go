@@ -1,15 +1,9 @@
-package main
+package data_processors
 
 import (
-	"fmt"
+	"algocode_deadline_standings/configs"
 	"strconv"
 )
-
-type Stats struct {
-	Count   int      `json:"Count"`
-	Color   string   `json:"Color"`
-	Peoples []string `json:"Peoples"`
-}
 
 //func writeToFile(name string, data any) {
 //	bytes, err := json.MarshalIndent(data, "", "    ")
@@ -21,15 +15,7 @@ type Stats struct {
 //	fl.Write(bytes)
 //}
 
-type DataError struct {
-	Reason string
-}
-
-func (e *DataError) Error() string {
-	return fmt.Sprintf("Data error: %s", e.Reason)
-}
-
-func statisticsFun(config *Config, userValues []*UserValues) (map[int]*Stats, error) {
+func CreateStatistics(config *configs.Config, userValues []*UserValues) (map[int]*Stats, error) {
 	if userValues == nil || config == nil {
 		return nil, &DataError{Reason: "config or userValues is nil"}
 	}

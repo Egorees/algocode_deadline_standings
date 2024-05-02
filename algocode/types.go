@@ -1,8 +1,7 @@
-package main
+package algocode
 
 import (
 	"encoding/json"
-	"github.com/go-resty/resty/v2"
 	"log/slog"
 )
 
@@ -20,7 +19,7 @@ type Problem struct {
 	Index int    `json:"index"`
 }
 
-func (problem *Problem) UnmarshalJSON(b []byte) error {
+func (problem *Problem) UnmarshalJSON(b []byte) error { // not sure if this should be places here
 	var data map[string]interface{}
 	if err := json.Unmarshal(b, &data); err != nil {
 		slog.Warn("Json unmarshalling error:", err)
@@ -53,18 +52,4 @@ type Contest struct {
 type SubmitsData struct {
 	Users    []*User    `json:"users"`
 	Contests []*Contest `json:"contests"`
-}
-
-func getSubmitsData(url string) (data *SubmitsData) {
-	client := resty.New()
-	res, err := client.R().SetResult(&data).Get(url)
-	if err != nil {
-		slog.Warn("Error while querying algocode: %v\n", err.Error())
-		return nil
-	}
-	if res.StatusCode() != 200 {
-		slog.Warn("Algocode returned code %v\n", res.StatusCode())
-		return nil
-	}
-	return data
 }
