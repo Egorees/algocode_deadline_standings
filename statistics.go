@@ -1,13 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 )
-
-//type People struct {
-//	FullName    string `json:"FullName"`
-//	NeedToSolve int    `json:"NeedToSolve"`
-//}
 
 type Stats struct {
 	Count   int      `json:"Count"`
@@ -25,25 +21,33 @@ type Stats struct {
 //	fl.Write(bytes)
 //}
 
-func statisticsFun(config *Config, userValues []*UserValues) map[int]*Stats {
-	//data := make([]*People, 0)
+type DataError struct {
+	Reason string
+}
+
+func (e *DataError) Error() string {
+	return fmt.Sprintf("Data error: %s", e.Reason)
+}
+
+func statisticsFun(config *Config, userValues []*UserValues) (map[int]*Stats, error) {
+	if userValues == nil || config == nil {
+		return nil, &DataError{Reason: "config or userValues is nil"}
+	}
 	stat := make(map[int]*Stats)
 	for _, el := range userValues {
 		cnt, _ := strconv.Atoi(el.Values[0].Value)
-		val, exs := stat[cnt]
-		if !exs {
-			stat[cnt] = &Stats{}
-			val = stat[cnt]
-			val.Peoples = make([]string, 0)
-			val.Count = 0
+		if _, exs := stat[cnt]; !exs {
+			stat[cnt] = &Stats{
+				Peoples: make([]string, 0),
+				Count:   0,
+				Color:   "",
+			}
 		}
-		stat[cnt].Color = config.GetColorByCount(cnt)
+		if stat[cnt].Color == "" {
+			stat[cnt].Color = config.GetColorByCount(cnt)
+		}
 		stat[cnt].Peoples = append(stat[cnt].Peoples, el.FullName)
 		stat[cnt].Count++
-		//data = append(data, &People{
-		//	FullName:    el.FullName,
-		//	NeedToSolve: cnt,
-		//})
 	}
-	return stat
+	return stat, nil
 }
