@@ -2,10 +2,43 @@
 <html lang="en">
 <head>
     <style>
-        table, th, td {
-            border: 2px solid black;
-            border-collapse: collapse;
-        }
+table {
+  width: 100%;
+  text-align: center;
+  border-collapse: collapse;
+}
+
+table tr th,
+table tr td {
+  border: 2px solid;
+}
+
+table thead th {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  background-color: #edecec;
+}
+
+/* here is the trick */
+
+table tbody:nth-of-type(1) tr:nth-of-type(1) td {
+  border-top: none !important;
+}
+
+table thead th {
+  border-top: none !important;
+  border-bottom: none !important;
+  box-shadow: inset 0 2px 0 #000000, inset 0 -2px 0 #000000;
+  padding: 2px 0;
+}
+
+
+/* and one small fix for weird FF behavior, described in https://stackoverflow.com/questions/7517127/ */
+
+table thead th {
+  background-clip: padding-box
+}
     </style>
     <meta charset="UTF-8">
     <title>Дедлайны</title>
@@ -35,7 +68,7 @@
 </head>
 <body>
     <table class="table table-striped">
-        <tr>
+	<thead><tr>
             <th scope="col">Человек</th>
             <th scope="col">Не решено</th>
             {{range .CriterionTitles}}
@@ -43,7 +76,7 @@
                     <a target="_blank" href="https://ejudge.algocode.ru/cgi-bin/new-client?contest_id={{.EjudgeId}}">{{.Title}}</a>
                 </th>
             {{end}}
-        </tr>
+	</tr></thead>
         <tbody>
             {{$single := .Single}}
             {{range .UserValues}}
