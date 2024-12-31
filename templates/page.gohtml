@@ -1,100 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <style>
-table {
-  width: 100%;
-  text-align: center;
-  border-collapse: collapse;
-}
+  <style>
+      table {
+          width: 100%;
+          text-align: center;
+          border-collapse: collapse;
+      }
 
-table tr th,
-table tr td {
-  border: 2px solid;
-}
+      table tr th,
+      table tr td {
+          border: 2px solid;
+      }
 
-table thead th {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  background-color: #edecec;
-}
+      table thead th {
+          position: -webkit-sticky;
+          position: sticky;
+          top: 0;
+          background-color: #edecec;
+      }
 
-/* here is the trick */
+      /* here is the trick */
 
-table tbody:nth-of-type(1) tr:nth-of-type(1) td {
-  border-top: none !important;
-}
+      table tbody:nth-of-type(1) tr:nth-of-type(1) td {
+          border-top: none !important;
+      }
 
-table thead th {
-  border-top: none !important;
-  border-bottom: none !important;
-  box-shadow: inset 0 2px 0 #000000, inset 0 -2px 0 #000000;
-  padding: 2px 0;
-}
+      table thead th {
+          border-top: none !important;
+          border-bottom: none !important;
+          box-shadow: inset 0 2px 0 #000000, inset 0 -2px 0 #000000;
+          padding: 2px 0;
+      }
 
 
-/* and one small fix for weird FF behavior, described in https://stackoverflow.com/questions/7517127/ */
+      /* and one small fix for weird FF behavior, described in https://stackoverflow.com/questions/7517127/ */
 
-table thead th {
-  background-clip: padding-box
-}
-    </style>
-    <meta charset="UTF-8">
-    <title>Дедлайны</title>
-    <link rel="icon" href="/static/favicon.jpg">
-    <link rel="stylesheet" href="/static/bootstrap.min.css">
-    <style>
-        a {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
+      table thead th {
+          background-clip: padding-box
+      }
+  </style>
+  <meta charset="UTF-8">
+  <title>Дедлайны</title>
+  <link rel="icon" href="/static/favicon.jpg">
+  <link rel="stylesheet" href="/static/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/base_style.css">
+  <style>
+      a {
+          color: black;
+          text-decoration: none;
+          cursor: pointer;
+      }
 
-        a:hover {
-            color: darkgray;
-            text-decoration: none;
-        }
+      a:hover {
+          color: darkgray;
+          text-decoration: none;
+      }
 
-        a:active {
-            color: gray;
-            text-decoration: none;
-        }
+      a:active {
+          color: gray;
+          text-decoration: none;
+      }
 
-        th, td {
-            text-align: center;
-        }
-    </style>
+      th, td {
+          text-align: center;
+      }
+  </style>
 </head>
 <body>
-    <table class="table table-striped">
-	<thead><tr>
-            <th scope="col">Человек</th>
-            <th scope="col">Не решено</th>
-            {{range .CriterionTitles}}
-                <th scope="col">
-                    <a target="_blank" href="https://ejudge.algocode.ru/cgi-bin/new-client?contest_id={{.EjudgeId}}">{{.Title}}</a>
-                </th>
-            {{end}}
-	</tr></thead>
-        <tbody>
-            {{$single := .Single}}
-            {{range .UserValues}}
-                <tr>
-                    <th scope="row">
-                        {{if $single}}
-                            <a href="/">{{.FullName}}</a>
-                        {{else}}
-                            <a href="/search/{{.FullName}}">{{.FullName}}</a>
-                        {{end}}
-                    </th>
-                    {{range .Values}}
-                        <td style="background-color:{{.Color}}">{{.Value}}</td>
-                    {{end}}
-                </tr>
-            {{end}}
-        </tbody>
-    </table>
+<table class="table table-striped">
+  <thead>
+  <tr>
+    <th scope="col">Человек</th>
+    <th scope="col">Не решено</th>
+      {{range .CriterionTitles}}
+        <th scope="col">
+          <a target="_blank"
+             href="https://ejudge.algocode.ru/cgi-bin/new-client?contest_id={{.EjudgeId}}">{{.Title}}</a>
+        </th>
+      {{end}}
+  </tr>
+  </thead>
+  <tbody>
+  {{$single := .Single}}
+  {{range .UserValues}}
+    <tr>
+      <th scope="row">
+          {{if $single}}
+            <a href="/">{{.FullName}}</a>
+          {{else}}
+            <a href="/search/{{.FullName}}">{{.FullName}}</a>
+          {{end}}
+      </th>
+        {{range .Values}}
+          <td style="background-color:{{.Color}}">{{.Value}}</td>
+        {{end}}
+    </tr>
+  {{end}}
+  </tbody>
+</table>
 </body>
 {{template "footer.gohtml"}}
 </html>
