@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Ошибочка вышла =(</title>
-    <link rel="icon" href="/static/favicon.jpg">
-    <style>
-        .centered {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-    </style>
+  <meta charset="utf-8">
+  <title>Ошибочка вышла =(</title>
+  <link rel="icon" href="/static/favicon.jpg">
+  <link rel="stylesheet" href="/static/base_style.css">
+  <style>
+      .centered {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+      }
+  </style>
 </head>
-    <div class="centered">
-        <h1>{{ .Error }}</h1>
-        <video src="/static/sadcat.mp4" controls autoplay loop></video>
-    </div>
+<body>
+<div class="centered">
+  <h1>{{ .Error }}</h1>
+  <video src="/static/sadcat.mp4" controls autoplay loop></video>
+</div>
+</body>
+{{template "footer.gohtml"}}
 </html>
