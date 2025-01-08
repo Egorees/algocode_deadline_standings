@@ -2,12 +2,14 @@ package server
 
 import (
 	"algocode_deadline_standings/configs"
-	cache "github.com/chenyahui/gin-cache"
-	"github.com/chenyahui/gin-cache/persist"
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"log/slog"
 	"slices"
 	"time"
+
+	cache "github.com/chenyahui/gin-cache"
+	"github.com/chenyahui/gin-cache/persist"
+	"github.com/gin-gonic/gin"
 )
 
 func RunServer(config *configs.Config) {
@@ -30,7 +32,7 @@ func RunServer(config *configs.Config) {
 	// I think now we don't need this... https://pkg.go.dev/github.com/gin-gonic/gin#Engine.SetTrustedProxies
 	err := router.SetTrustedProxies(nil)
 	if err != nil {
-		slog.Error("Cant set trusted proxies: %s", err)
+		slog.Error(fmt.Sprintf("Cant set trusted proxies: %s", err))
 		panic(err)
 	}
 
