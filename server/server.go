@@ -55,6 +55,14 @@ func RunServer(config *configs.Config) {
 		allStats(context, config)
 	})
 
+	router.GET("/passed/:pass", cache.CacheByRequestURI(store, updPrd), func(context *gin.Context) {
+		studentWhoPass(context, config)
+	})
+
+	router.GET("/not_passed/:pass", cache.CacheByRequestURI(store, updPrd), func(context *gin.Context) {
+		studentWhoNotPass(context, config)
+	})
+
 	err = router.Run(config.ServerAddressPort)
 	if err != nil {
 		slog.Error("Server down with ", "error", err)

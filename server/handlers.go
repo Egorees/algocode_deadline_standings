@@ -3,10 +3,13 @@ package server
 import (
 	"algocode_deadline_standings/configs"
 	processors "algocode_deadline_standings/data-processors"
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"net/http"
 	"slices"
+	"strconv"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 func getData(config *configs.Config, needStats bool) (
@@ -72,4 +75,40 @@ func allStats(c *gin.Context, config *configs.Config) {
 	c.HTML(http.StatusOK, "stats.gohtml", gin.H{
 		"Stats": stats,
 	})
+}
+
+func studentWhoPass(c *gin.Context, config *configs.Config) {
+	_, _, stats, err := getData(config, true)
+	errorChecker(c, err)
+	problemsPass, err := strconv.Atoi(c.Param("pass"))
+	errorChecker(c, err)
+	totalCnt := 0
+	resString := strings.Builder{}
+	for problemsCnt, users := range stats {
+		if problemsCnt > problemsPass {
+			continue
+		}
+		totalCnt += users.Count
+		resString.WriteString(strings.Join(users.Peoples, "\n"))
+		resString.WriteByte('\n')
+	}
+	c.String(http.StatusOK, fmt.Sprintf("Total: %v\n%v", totalCnt, resString.String()))
+}
+
+func studentWhoNotPass(c *gin.Context, config *configs.Config) {
+	_, _, stats, err := getData(config, true)
+	errorChecker(c, err)
+	problemsPass, err := strconv.Atoi(c.Param("pass"))
+	errorChecker(c, err)
+	totalCnt := 0
+	resString := strings.Builder{}
+	for problemsCnt, users := range stats {
+		if problemsCnt <= problemsPass {
+			continue
+		}
+		totalCnt += users.Count
+		resString.WriteString(strings.Join(users.Peoples, "\n"))
+		resString.WriteByte('\n')
+	}
+	c.String(http.StatusOK, fmt.Sprintf("Total: %v\n%v", totalCnt, resString.String()))
 }
