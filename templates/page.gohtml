@@ -93,7 +93,12 @@
           {{end}}
       </th>
         {{range .Values}}
-          <td style="background-color:{{.Color}}">{{.Value}}</td>
+          <td style="background-color:{{.Color}}">
+              {{.Value}}
+            <font color="{{.SpecialColor}}">
+            {{.SpecialValue}}
+            </font>
+          </td>
         {{end}}
     </tr>
   {{end}}

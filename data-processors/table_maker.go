@@ -3,6 +3,7 @@ package data_processors
 import (
 	"algocode_deadline_standings/algocode"
 	"algocode_deadline_standings/configs"
+	"fmt"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"log/slog"
@@ -27,42 +28,42 @@ func GetDeadlineResults(config *configs.Config) ([]*CriterionTitle, []*UserValue
 		result[strconv.Itoa(user.Id)] = &UnsolvedData{}
 	}
 
-	needTasks := configs.ParseDeadlineTasks(config.DeadlineFilepath)
+	needProblems := configs.ParseDeadlineProblems(config.DeadlineFilepath)
 
 	for _, contest := range data.Contests {
-		needTasksInds := make([]int, len(needTasks.Tasks[contest.Title]))
-		if len(needTasksInds) == 0 {
+		needProblemsInds := make([]int, len(needProblems.Problems[contest.Title]))
+		if len(needProblemsInds) == 0 {
 			continue
 		}
 		criterionTitles = append(criterionTitles, &CriterionTitle{
 			Title:    contest.Title,
 			EjudgeId: contest.EjudgeId,
 		})
-		for ind, needTask := range needTasks.Tasks[contest.Title] {
-			taskInd := slices.IndexFunc(contest.Problems, func(problem *algocode.Problem) bool {
-				return problem.Short == needTask
+		for ind, needProblem := range needProblems.Problems[contest.Title] {
+			problemInd := slices.IndexFunc(contest.Problems, func(problem *algocode.Problem) bool {
+				return problem.Short == needProblem
 			})
-			if taskInd == -1 {
+			if problemInd == -1 {
 				// skipping it actually, maybe that will break something :)
 				// well, it seems it's ok
-				slog.Error("Not found task %v in %v\n", needTask, contest.Title)
+				slog.Error(fmt.Sprintf("Not found problem '%v' in '%v'\n", needProblem, contest.Title))
 			} else {
-				needTasksInds[ind] = taskInd
+				needProblemsInds[ind] = problemInd
 			}
 		}
-		for user, tasks := range contest.Users {
-			tasksFromContest := &TasksFromContest{
+		for user, problems := range contest.Users {
+			problemsFromContest := &ProblemsFromContest{
 				ContestTitle: contest.Title,
-				Tasks:        make([]string, 0),
+				Problems:     make([]string, 0),
 			}
-			for indInNeedTasks, needTask := range needTasksInds {
-				if tasks[needTask].Score == 0 {
-					tasksFromContest.Tasks = append(tasksFromContest.Tasks,
-						needTasks.Tasks[contest.Title][indInNeedTasks])
+			for indInNeedProblems, needProblem := range needProblemsInds {
+				if problems[needProblem].Score == 0 {
+					problemsFromContest.Problems = append(problemsFromContest.Problems,
+						needProblems.Problems[contest.Title][indInNeedProblems])
 				}
 			}
-			result[user].unsolved = append(result[user].unsolved, tasksFromContest)
-			result[user].total += len(tasksFromContest.Tasks)
+			result[user].unsolved = append(result[user].unsolved, problemsFromContest)
+			result[user].total += len(problemsFromContest.Problems)
 		}
 	}
 	for ind, user := range data.Users {
@@ -91,19 +92,43 @@ func GetDeadlineResults(config *configs.Config) ([]*CriterionTitle, []*UserValue
 			},
 		)
 
-		for _, tasksFromContest := range cur.unsolved {
+		for _, problemsFromContest := range cur.unsolved {
 			var valueColor string
-			tasksInString := strings.Join(tasksFromContest.Tasks[:], ", ")
-			if tasksInString == "" {
-				tasksInString = config.FullSolveText
+			specialValueColor := ""
+			requiredProblemsFromContest := ProblemsFromContest{
+				ContestTitle: problemsFromContest.ContestTitle,
+				Problems:     make([]string, 0),
+			}
+			notRequiredProblemsFromContest := ProblemsFromContest{
+				ContestTitle: problemsFromContest.ContestTitle,
+				Problems:     make([]string, 0),
+			}
+			for _, problem := range problemsFromContest.Problems {
+				if slices.Contains(needProblems.RequiredProblems[problemsFromContest.ContestTitle], problem) {
+					requiredProblemsFromContest.Problems = append(requiredProblemsFromContest.Problems, problem)
+				} else {
+					notRequiredProblemsFromContest.Problems = append(notRequiredProblemsFromContest.Problems, problem)
+				}
+			}
+
+			requiredProblemsInString := strings.Join(requiredProblemsFromContest.Problems, ", ")
+			notRequiredProblemsInString := strings.Join(notRequiredProblemsFromContest.Problems, ", ")
+			if requiredProblemsInString == "" && notRequiredProblemsInString == "" {
+				notRequiredProblemsInString = config.FullSolveText
 				valueColor = config.UnsolvedBorders[0].Color
 			} else {
 				valueColor = config.UnsolvedBorders[len(config.UnsolvedBorders)-1].Color
+				if requiredProblemsInString != "" && notRequiredProblemsInString != "" {
+					notRequiredProblemsInString += ", "
+				}
+				specialValueColor = "#FF0000"
 			}
 			usersValues[ind].Values = append(usersValues[ind].Values,
 				&Value{
-					Value: tasksInString,
-					Color: valueColor,
+					Value:        notRequiredProblemsInString,
+					Color:        valueColor,
+					SpecialValue: requiredProblemsInString,
+					SpecialColor: specialValueColor,
 				},
 			)
 		}

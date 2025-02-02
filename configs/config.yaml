@@ -1,4 +1,4 @@
-cache_time: 60
+cache_time: 15
 full_solve_text: "АМНЯМ"
 unsolved_borders:
   - count: 0
@@ -8,8 +8,8 @@ unsolved_borders:
   - count: 5
     color: "#ffcb82"
   - count: 1000000000
-    color: "#ff7259"
+    color: "#e67070"
 server_address_port: "127.0.0.1:8080"
-submits_link: "https://algocode.ru/standings_data/bp_fall_2023/"
+submits_link: "https://algocode.ru/standings_data/bp_fall_2024"
 deadline_filepath: "configs/deadline.yaml"
 release_mode: false

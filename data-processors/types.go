@@ -1,19 +1,22 @@
 package data_processors
 
-type TasksFromContest struct {
+type ProblemsFromContest struct {
 	ContestTitle string
-	Tasks        []string
+	Problems     []string
 }
 
 type UnsolvedData struct {
 	total    int
-	unsolved []*TasksFromContest
+	unsolved []*ProblemsFromContest
 	// maybe we will need more data
 }
 
 type Value struct {
 	Value string
 	Color string
+	// these values are for required problems that aren't solved
+	SpecialValue string
+	SpecialColor string
 }
 
 type UserValues struct {

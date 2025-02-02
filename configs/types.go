@@ -3,7 +3,8 @@ package configs
 type DeadlineTasks = map[string][]string
 
 type DeadlineData struct {
-	Tasks DeadlineTasks `yaml:"deadline"`
+	Problems         DeadlineTasks `yaml:"deadline"`
+	RequiredProblems DeadlineTasks `yaml:"required_problems"`
 }
 
 type UnsolvedBorder struct {

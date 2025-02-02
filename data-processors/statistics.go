@@ -5,16 +5,6 @@ import (
 	"strconv"
 )
 
-//func writeToFile(name string, data any) {
-//	bytes, err := json.MarshalIndent(data, "", "    ")
-//	if err != nil {
-//		fmt.Println("Meow")
-//	}
-//	fl, _ := os.Create(name)
-//	defer fl.Close()
-//	fl.Write(bytes)
-//}
-
 func CreateStatistics(config *configs.Config, userValues []*UserValues) (map[int]*Stats, error) {
 	if userValues == nil || config == nil {
 		return nil, &DataError{Reason: "config or userValues is nil"}
