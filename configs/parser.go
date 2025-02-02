@@ -2,16 +2,17 @@ package configs
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"log/slog"
 	"os"
 	"slices"
+
+	"gopkg.in/yaml.v3"
 )
 
 func ParseConfig(filepath string) *Config {
 	file, err := os.Open(filepath)
 	if err != nil {
-		slog.Error("Error during opening config: %v", err.Error())
+		slog.Error(fmt.Sprintf("Error during opening config: %v", err.Error()))
 		panic(err)
 	}
 	defer func(file *os.File) {
@@ -23,7 +24,7 @@ func ParseConfig(filepath string) *Config {
 	parser := yaml.NewDecoder(file)
 	var res Config
 	if err := parser.Decode(&res); err != nil {
-		slog.Error("Error during parsing config: %v", err.Error())
+		slog.Error(fmt.Sprintf("Error during parsing config: %v", err.Error()))
 		panic(err)
 	}
 	return &res
@@ -43,7 +44,7 @@ func (config *Config) GetColorByCount(count int) string {
 func ParseDeadlineProblems(filepath string) DeadlineData {
 	file, err := os.Open(filepath)
 	if err != nil {
-		slog.Error("Error during opening deadline problems file: %v", err.Error())
+		slog.Error(fmt.Sprintf("Error during opening deadline tasks file: %v", err.Error()))
 		panic(err)
 	}
 	defer func(file *os.File) {
@@ -55,7 +56,7 @@ func ParseDeadlineProblems(filepath string) DeadlineData {
 	parser := yaml.NewDecoder(file)
 	var res DeadlineData
 	if err := parser.Decode(&res); err != nil {
-		slog.Error("Error during parsing deadline problems: %v", err.Error())
+		slog.Error(fmt.Sprintf("Error during parsing deadline tasks: %v", err.Error()))
 		panic(err)
 	}
 	for contest, problems := range res.RequiredProblems {

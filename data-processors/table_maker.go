@@ -4,12 +4,13 @@ import (
 	"algocode_deadline_standings/algocode"
 	"algocode_deadline_standings/configs"
 	"fmt"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"log/slog"
 	"slices"
 	"strconv"
 	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func GetDeadlineResults(config *configs.Config) ([]*CriterionTitle, []*UserValues, error) {
@@ -79,7 +80,7 @@ func GetDeadlineResults(config *configs.Config) ([]*CriterionTitle, []*UserValue
 			&UserValues{
 				FirstName:  firstName,
 				SecondName: secondName,
-				FullName:   secondName + " " + firstName,
+				FullName:   fmt.Sprintf("[%v] %v %v", user.GroupShort, secondName, firstName),
 				Values:     []*Value{},
 			},
 		)
@@ -135,10 +136,7 @@ func GetDeadlineResults(config *configs.Config) ([]*CriterionTitle, []*UserValue
 	}
 
 	slices.SortFunc(usersValues, func(a, b *UserValues) int {
-		if n := strings.Compare(a.SecondName, b.SecondName); n != 0 {
-			return n
-		}
-		return strings.Compare(a.FirstName, b.FirstName)
+		return strings.Compare(a.FullName, b.FullName)
 	})
 
 	return criterionTitles, usersValues, nil
