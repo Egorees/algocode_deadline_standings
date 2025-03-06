@@ -36,7 +36,7 @@ type UserSubmit struct {
 	Score   int    `json:"score"`
 	Penalty int    `json:"penalty"`
 	Verdict string `json:"verdict"`
-	Time    int    `json:"time"`
+//	Time    int    `json:"time"`
 }
 
 type Contest struct {
